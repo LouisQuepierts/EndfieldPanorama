@@ -72,7 +72,7 @@ public final class EndfieldPanoramaRenderer {
 
         this.modelPose          = new PoseStack();
         this.modelMatrix        = new Matrix4f()
-                                    .translate(0f, 0.5f, -3.2f)
+                                    .translate(0f, 1.0f, -3.0f)
                                     .rotateY(Mth.PI)
                                     .scale(1, -1, 1);
 
@@ -121,15 +121,17 @@ public final class EndfieldPanoramaRenderer {
         var format              = DefaultVertexFormat.POSITION_TEX;
         var buffer              = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, format);
 
-//        this.modelPose.pushPose();
+        this.modelPose.pushPose();
         model.renderToBuffer(this.modelPose, buffer, 15728880, OverlayTexture.NO_OVERLAY);
-//        this.modelPose.popPose();
+        this.modelPose.popPose();
 
         var mesh                = buffer.buildOrThrow();
         var vbo                 = format.getImmediateDrawVertexBuffer();
         var shader              = GameRenderer.getPositionTexShader();
 
-        var viewMatrix          = this.viewMatrix;
+        var viewMatrix          = new Matrix4f()
+                .translate(0.0f, 0.0f, 0.0f)
+                .rotateX(-0.2f);
         var projectionMatrix    = this.projectionMatrix;
 
         this.maskTarget.clear(false);
@@ -157,7 +159,9 @@ public final class EndfieldPanoramaRenderer {
 
     private void blitCharacter() {
         var shader      = Shaders.TITLE_COMBINE.getInstance();
-        var invViewMatrix = new Matrix4f().translate(0.0f, 0.0f, -state.getTimer());
+        var invViewMatrix = new Matrix4f()
+                .translate(0.0f, 0.0f, -this.timer)
+                .rotateX(-0.2f);
 
         shader.setSampler("uMaskSampler", this.maskTarget);
         shader.setSampler("uBackgroundSampler", this.targetBackground);
