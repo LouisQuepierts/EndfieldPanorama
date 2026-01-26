@@ -14,7 +14,7 @@ public class MinecraftClientMixin {
             method = "resizeDisplay",
             at = @At("RETURN")
     )
-    public void els$resizeDisplay(CallbackInfo ci) {
+    public void endfieldpanorama$resizeDisplay(CallbackInfo ci) {
         if (!EndfieldPanoramaRenderer.setuped()) {
             return;
         }
@@ -28,7 +28,7 @@ public class MinecraftClientMixin {
             method = "destroy",
             at = @At("HEAD")
     )
-    public void els$destroy(CallbackInfo ci) {
+    public void endfieldpanorama$destroy(CallbackInfo ci) {
         EndfieldPanoramaRenderer.getInstance().destroy();
     }
 

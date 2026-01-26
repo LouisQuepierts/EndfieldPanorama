@@ -15,7 +15,7 @@ public class PanoramaRendererMixin {
             method = "render",
             at = @At("HEAD")
     )
-    public void els$preparePanorama(GuiGraphics guiGraphics, int width, int height, float fade, float partialTick, CallbackInfo ci) {
+    public void endfieldpanorama$preparePanorama(GuiGraphics guiGraphics, int width, int height, float fade, float partialTick, CallbackInfo ci) {
         var renderer = EndfieldPanoramaRenderer.getInstance();
         renderer.preparePanorama();
     }
@@ -24,7 +24,7 @@ public class PanoramaRendererMixin {
             method = "render",
             at = @At("RETURN")
     )
-    public void els$renderScene(GuiGraphics guiGraphics, int width, int height, float fade, float partialTick, CallbackInfo ci) {
+    public void endfieldpanorama$renderScene(GuiGraphics guiGraphics, int width, int height, float fade, float partialTick, CallbackInfo ci) {
         var renderer = EndfieldPanoramaRenderer.getInstance();
         renderer.renderScene(guiGraphics, partialTick);
     }

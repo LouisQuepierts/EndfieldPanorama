@@ -14,21 +14,8 @@ public class TitleScreenMixin {
             method = "<init>(ZLnet/minecraft/client/gui/components/LogoRenderer;)V",
             at = @At("RETURN")
     )
-    public void els$setup(CallbackInfo ci) {
+    public void endfieldpanorama$setup(CallbackInfo ci) {
         EndfieldPanoramaRenderer.setup();
     }
-
-    /*@Inject(
-            method = "render",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screens/TitleScreen;renderPanorama(Lnet/minecraft/client/gui/GuiGraphics;F)V",
-                    shift = At.Shift.AFTER
-            ),
-            cancellable = true
-    )
-    public void els$cancel(CallbackInfo ci) {
-        ci.cancel();
-    }*/
 
 }
