@@ -12,6 +12,10 @@ repositories {
     mavenLocal()
 }
 
+ext {
+    joptDep = 'net.sf.jopt-simple:jopt-simple:5.0.4'
+}
+
 base {
     archivesName = mod_id
 }
@@ -98,6 +102,8 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 dependencies {
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
+
+    implementation project(":earlywindow")
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -169,4 +175,22 @@ tasks.register("runWithRenderDoc", Exec) {
             "org.gradle.wrapper.GradleWrapperMain",
             "runClient"
     ]
+}
+
+def copyEarlyWindow = tasks.register("copyEarlyWindow", Copy) {
+    def output = "run/mods"
+    def shadow = project(":earlywindow").tasks.named("shadowJar")
+    def source = shadow.flatMap { it.archiveFile }
+    def file = source.map { it.asFile }
+
+    dependsOn(shadow)
+    from file
+    into rootProject.layout.projectDirectory.dir(output)
+
+}
+
+gradle.projectsEvaluated {
+    tasks.named("runClient").configure {
+        dependsOn(copyEarlyWindow)
+    }
 }

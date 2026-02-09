@@ -1,11 +1,12 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.quepierts.endfieldpanorama.mixin",
+  "package": "net.quepierts.endfieldpanorama.neoforge.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
   ],
   "client": [
+    "GameRendererMixin",
     "MinecraftClientMixin",
     "PanoramaRendererMixin",
     "TitleScreenMixin"
