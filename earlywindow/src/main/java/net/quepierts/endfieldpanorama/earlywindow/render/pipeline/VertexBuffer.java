@@ -1,9 +1,11 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.pipeline;
 
+import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 
-public final class VertexBuffer {
+public final class VertexBuffer implements Resource {
 
     private static int BOUND_BUFFER;
 
@@ -11,6 +13,7 @@ public final class VertexBuffer {
     private final int element;
     private final int array;
 
+    @Getter
     private Mesh last;
 
     public VertexBuffer() {
@@ -46,6 +49,7 @@ public final class VertexBuffer {
         this.unbind();
     }
 
+    @Override
     public void bind() {
         if (BOUND_BUFFER != this.array) {
             GL31.glBindVertexArray(this.array);
@@ -55,7 +59,7 @@ public final class VertexBuffer {
         }
     }
 
-
+    @Override
     public void unbind() {
         if (BOUND_BUFFER == this.array) {
             GL31.glBindVertexArray(0);
@@ -65,6 +69,7 @@ public final class VertexBuffer {
         }
     }
 
+    @Override
     public void free() {
         GL31.glDeleteBuffers(this.vertex);
         GL31.glDeleteBuffers(this.element);

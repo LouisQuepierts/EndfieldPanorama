@@ -1,43 +1,71 @@
 package net.quepierts.endfieldpanorama.earlywindow.render;
 
+import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
+import net.quepierts.endfieldpanorama.earlywindow.MinecraftProfile;
+import net.quepierts.endfieldpanorama.earlywindow.render.model.PlayerModel;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderManager;
-import net.quepierts.endfieldpanorama.earlywindow.render.shader.instance.SceneUbo;
-import net.quepierts.endfieldpanorama.earlywindow.render.shader.instance.TestShader;
+import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.CharacterShader;
+import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SceneUbo;
+import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.TestShader;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.opengl.GL31;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class RenderScene {
 
-    public static final float FOV   = 90f;
-    public static final float NEAR  = 0.1f;
-    public static final float FAR   = 1000f;
+    public static final float FOV   = 70.0f;
+    public static final float NEAR  = 0.05f;
+    public static final float FAR   = 100.0f;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RenderScene.class);
 
     private int width;
     private int height;
 
-    private final Matrix4f      matProjection;
-    private final Matrix4f      matProjectionInverse;
-    private final Matrix4f      matView;
-    private final Matrix4f      matViewInverse;
+    private final ResourceManager   resourceManager;
+    private final MinecraftProfile  profile;
 
-    private final Vector3f      cameraPosition;
-    private final Quaternionf   cameraRotation;
+    private final Matrix4f          matProjection;
+    private final Matrix4f          matProjectionInverse;
+    private final Matrix4f          matView;
+    private final Matrix4f          matViewInverse;
+
+    private final Vector3f          cameraPosition;
+    private final Quaternionf       cameraRotation;
+
+    private final Graphics          graphics;
 
     // GL
-    private final SceneUbo      sceneUbo;
-    private final ShaderManager shaders;
+    private final SceneUbo          sceneUbo;
+    private final ShaderManager     shaders;
 
-    private final TestShader testShader;
+    private final ImageTexture      defaultPlayerTexture;
+    private final ImageTexture      profilePlayerTexture;
+
+    private final TestShader        testShader;
+    private final CharacterShader   characterShader;
+
+    private final PlayerModel       playerModel;
 
     // accept data from joml
     private final float[]       jomlArr;
-
-
-
     private float               time;
 
-    public RenderScene() {
+    private boolean             syncPlayerTexture;
+
+    public RenderScene(
+            @NotNull ResourceManager    resourceManager,
+            @NotNull MinecraftProfile   profile
+    ) {
+
+        this.resourceManager = resourceManager;
+        this.profile = profile;
+
         // init
         this.matProjection          = new Matrix4f();
         this.matProjectionInverse   = new Matrix4f();
@@ -45,38 +73,101 @@ public final class RenderScene {
         this.matViewInverse         = new Matrix4f();
 
         this.cameraPosition         = new Vector3f(0f, 0f, 0f);
-        this.cameraRotation         = new Quaternionf();
+        this.cameraRotation         = new Quaternionf().rotateX(-0.2f);
+
+        this.graphics               = new Graphics();
 
         this.sceneUbo               = new SceneUbo();
         this.shaders                = new ShaderManager();
 
         this.testShader             = new TestShader(this.shaders);
+        this.characterShader        = new CharacterShader(this.shaders);
+        this.defaultPlayerTexture   = ImageTexture.fromResource("player.png", GL31.GL_NEAREST, GL31.GL_REPEAT);
+        this.profilePlayerTexture   = this.createProfilePlayerTexture();
+
+        this.playerModel            = new PlayerModel(true);
 
         this.jomlArr = new float[16];
 
-        this.sceneUbo.buffer.bind();
         this.sceneUbo.uTime.set1f(this.time);
-        this.testShader.bindUbo(this.sceneUbo.buffer);
+        this.testShader.bind(this.sceneUbo);
+        this.testShader.uTexture.set1i(GL31.GL_TEXTURE0);
 
-        RenderHelper.init();
+        this.characterShader.bind(this.sceneUbo);
+        this.characterShader.uTexture.set1i(GL31.GL_TEXTURE0);
+
+        resourceManager.register(this.testShader);
+        resourceManager.register(this.characterShader);
+        resourceManager.register(this.sceneUbo);
+        resourceManager.register(this.defaultPlayerTexture);
+        resourceManager.register(this.profilePlayerTexture);
+        resourceManager.register(this.graphics);
+        resourceManager.register(this.playerModel);
+        resourceManager.register(this::free);
+
+        long currentContext = GLFW.glfwGetCurrentContext();
+        Thread thread = Thread.currentThread();
+        LOGGER.info("Current context: {}", currentContext);
+        LOGGER.info("Current thread: {}", thread);
+
+    }
+
+    public RenderScene duplicate(ResourceManager manager) {
+        var profile = this.profile;
+
+        var scene   = new RenderScene(manager, profile);
+        scene.time = this.time;
+        scene.resize(this.width, this.height);
+        return scene;
     }
 
     public void render(float delta) {
 
+        if (this.profile.isDone() && !this.syncPlayerTexture) {
+
+            long currentContext = GLFW.glfwGetCurrentContext();
+            Thread thread = Thread.currentThread();
+            LOGGER.info("Current context: {}", currentContext);
+            LOGGER.info("Current thread: {}", thread);
+
+            this.syncPlayerTexture = true;
+            var bytes = this.profile.getSkin();
+            this.profilePlayerTexture.upload(bytes);
+            this.profilePlayerTexture.setFilter(GL31.GL_NEAREST);
+            this.profilePlayerTexture.bind(0);
+        }
+
+        var texture = this.syncPlayerTexture ? this.profilePlayerTexture : this.defaultPlayerTexture;
+        texture.bind(0);
+
         this.time += delta;
 
+        GL31.glCullFace(GL31.GL_BACK);
         this.updateViewMatrix();
+        this.sceneUbo.uProjectionMatrix.setMatrix4f(this.matProjection.get(this.jomlArr));
+        this.sceneUbo.uInverseProjectionMatrix.setMatrix4f(this.matProjectionInverse.get(this.jomlArr));
         this.sceneUbo.uTime.set1f(this.time);
-        this.sceneUbo.buffer.upload();
+        this.sceneUbo.upload();
+        this.sceneUbo.bind();
 
-        RenderHelper.blit(this.testShader);
+        this.graphics.blit(this.testShader);
+
+
+        this.characterShader.uModelMatrix.setMatrix4f(
+                new Matrix4f()
+                        .translate(0f, 0f, -3.0f)
+                        .scale(1f / 16f)
+        );
+
+        // enable depth
+        GL31.glEnable(GL31.GL_DEPTH_TEST);
+        this.playerModel.draw(this.characterShader);
+        GL31.glDisable(GL31.GL_DEPTH_TEST);
+        texture.unbind(0);
     }
 
     public void free() {
         this.shaders.free();
-        this.sceneUbo.buffer.free();
-
-        RenderHelper.free();
     }
 
     public void resize(int width, int height) {
@@ -84,6 +175,15 @@ public final class RenderScene {
         this.height = height;
 
         this.updateProjectionMatrix();
+    }
+
+    private ImageTexture createProfilePlayerTexture() {
+        if (this.profile.isDone() && !this.syncPlayerTexture) {
+            this.syncPlayerTexture = true;
+            return ImageTexture.fromByteArray(this.profile.getSkin(), GL31.GL_NEAREST, GL31.GL_REPEAT);
+        } else {
+            return new ImageTexture();
+        }
     }
 
     private void updateProjectionMatrix() {
@@ -98,17 +198,19 @@ public final class RenderScene {
 
     private void updateViewMatrix() {
         this.matView.identity()
-                .translate(this.cameraPosition)
-                .rotate(this.cameraRotation);
+                .translate(0.0f, 0.0f, time)
+                .rotateX(0.2f);
 
-        this.matViewInverse.set(this.matView).invert();
+        this.matViewInverse.identity()
+                .translate(0.0f, 0.0f, -time)
+                .rotateX(-0.2f);
 
         this.sceneUbo.uViewMatrix.setMatrix4f(this.matView.get(this.jomlArr));
         this.sceneUbo.uInverseViewMatrix.setMatrix4f(this.matViewInverse.get(this.jomlArr));
     }
 
     private static float calculateAspectRatio(int width, int height) {
-        return (float) width / height;
+        return width > height ? (float) width / height : (float) height / width;
     }
 
 }

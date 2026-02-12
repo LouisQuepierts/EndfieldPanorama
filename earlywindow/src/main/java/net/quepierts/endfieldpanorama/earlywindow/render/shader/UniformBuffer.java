@@ -2,6 +2,7 @@ package net.quepierts.endfieldpanorama.earlywindow.render.shader;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 import org.lwjgl.system.MemoryUtil;
@@ -11,7 +12,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.Map;
 
-public final class UniformBuffer implements UniformContained {
+public class UniformBuffer implements UniformContained, Resource {
 
     private static final int MAX_BINDING_POINT = Math.min(8, GL31.glGetInteger(GL31.GL_MAX_UNIFORM_BUFFER_BINDINGS));
     private static final UniformBuffer[] BUFFERS = new UniformBuffer[MAX_BINDING_POINT];
@@ -25,19 +26,18 @@ public final class UniformBuffer implements UniformContained {
     @Getter
     private final int bindingPoint;
 
+    @Getter
     private final int size;
 
-    private final ByteBuffer buffer;
-
-    @Getter
-    private boolean dirty;
+    protected final ByteBuffer buffer;
+    protected boolean dirty;
 
     private final Map<String, AbstractUniform> uniforms;
 
     public UniformBuffer(
-            @NotNull    String             name,
-            @NotNull    UniformDefinition  definitions,
-                        int                bindingPoint
+            @NotNull    String              name,
+            @NotNull    UniformDefinition   definitions,
+                        int                 bindingPoint
     ) {
         if (definitions.isEmpty()) {
             throw new IllegalArgumentException("No uniforms defined for UniformBuffer " + name);
@@ -64,6 +64,25 @@ public final class UniformBuffer implements UniformContained {
         this.uniforms = builder.build();
     }
 
+    protected UniformBuffer(
+            @NotNull    String              name,
+                        int                 size,
+                        int                 bindingPoint
+    ) {
+        this.name           = name;
+        this.bindingPoint   = bindingPoint;
+
+        this.id         = GL31.glGenBuffers();
+        this.size       = size;
+        this.buffer     = MemoryUtil.memAlloc(size);
+
+        GL31.glBindBuffer(GL31.GL_UNIFORM_BUFFER, this.id);
+        GL31.glBufferData(GL31.GL_UNIFORM_BUFFER, size, GL31.GL_DYNAMIC_DRAW);
+        GL31.glBindBuffer(GL31.GL_UNIFORM_BUFFER, 0);
+
+        this.uniforms = ImmutableMap.of();
+    }
+
     public void upload() {
         for (var uniform : this.uniforms.values()) {
             uniform.upload();
@@ -81,11 +100,13 @@ public final class UniformBuffer implements UniformContained {
         GL31.glBindBuffer(GL31.GL_UNIFORM_BUFFER, 0);
     }
 
+    @Override
     public void free() {
         GL31.glDeleteBuffers(this.id);
         MemoryUtil.memFree(this.buffer);
     }
 
+    @Override
     public void bind() {
         if (BUFFERS[this.bindingPoint] != this) {
             BUFFERS[this.bindingPoint] = this;
@@ -93,6 +114,7 @@ public final class UniformBuffer implements UniformContained {
         }
     }
 
+    @Override
     public void unbind() {
         if (BUFFERS[this.bindingPoint] == this) {
             BUFFERS[this.bindingPoint] = null;
@@ -115,7 +137,7 @@ public final class UniformBuffer implements UniformContained {
 
         ViewUniform(UniformBuffer parent, UniformType type, int offset) {
             super(type);
-            this.offset = offset / type.size;
+            this.offset = offset / 4;
             this.parent = parent;
 
             var ref = parent.buffer;

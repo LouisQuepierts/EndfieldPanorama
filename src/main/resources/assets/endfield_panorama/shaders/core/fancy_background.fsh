@@ -209,7 +209,7 @@ void main() {
     float mask          = step(0.1, maskColor);
     vec3 front          = texture(uBackgroundSampler, texCoord).rgb;
     vec3 back           = renderBackground();
-    vec3 finalColor     = mix(back, front, mask);
+    vec3 finalColor     = back;
 
     fragColor           = vec4(finalColor, 1.0);
 }

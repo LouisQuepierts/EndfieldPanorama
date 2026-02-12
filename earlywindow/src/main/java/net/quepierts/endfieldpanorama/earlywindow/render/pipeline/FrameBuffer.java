@@ -1,17 +1,19 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.pipeline;
 
 import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
+import net.quepierts.endfieldpanorama.earlywindow.render.BaseTexture;
 import org.lwjgl.opengl.GL31;
 
 @Getter
-public final class FrameBuffer {
+public final class FrameBuffer extends BaseTexture implements Resource {
 
     private final float[] clear = { 0.0f, 0.0f, 0.0f, 0.0f };
     private final int clearMask;
     private final boolean useDepth;
 
     private int framebuffer;
-    private int texture;
+    private int textureId;
     private int depth;
 
     private int width;
@@ -25,7 +27,7 @@ public final class FrameBuffer {
                                 : GL31.GL_COLOR_BUFFER_BIT;
 
         this.framebuffer    = -1;
-        this.texture        = -1;
+        this.textureId = -1;
         this.depth          = -1;
         this.width          = -1;
         this.height         = -1;
@@ -41,14 +43,14 @@ public final class FrameBuffer {
         this.framebuffer = GL31.glGenFramebuffers();
         GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, this.framebuffer);
 
-        this.texture = GL31.glGenTextures();
-        GL31.glBindTexture(GL31.GL_TEXTURE_2D, this.texture);
+        this.textureId = GL31.glGenTextures();
+        GL31.glBindTexture(GL31.GL_TEXTURE_2D, this.textureId);
         GL31.glTexImage2D(GL31.GL_TEXTURE_2D, 0, GL31.GL_RGBA8, width, height, 0, GL31.GL_RGBA, GL31.GL_UNSIGNED_BYTE, (java.nio.ByteBuffer) null);
         GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MAG_FILTER, GL31.GL_NEAREST);
         GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_MIN_FILTER, GL31.GL_NEAREST);
         GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_S, GL31.GL_CLAMP_TO_EDGE);
         GL31.glTexParameteri(GL31.GL_TEXTURE_2D, GL31.GL_TEXTURE_WRAP_T, GL31.GL_CLAMP_TO_EDGE);
-        GL31.glFramebufferTexture2D(GL31.GL_FRAMEBUFFER, GL31.GL_COLOR_ATTACHMENT0, GL31.GL_TEXTURE_2D, this.texture, 0);
+        GL31.glFramebufferTexture2D(GL31.GL_FRAMEBUFFER, GL31.GL_COLOR_ATTACHMENT0, GL31.GL_TEXTURE_2D, this.textureId, 0);
 
         if (this.useDepth) {
             this.depth = GL31.glGenRenderbuffers();
@@ -63,12 +65,27 @@ public final class FrameBuffer {
         this.height = height;
     }
 
+    @Override
     public void bind() {
         GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, this.framebuffer);
     }
 
+    @Override
     public void unbind() {
         GL31.glBindFramebuffer(GL31.GL_FRAMEBUFFER, 0);
+    }
+
+    @Override
+    public void free() {
+        if (this.framebuffer == -1) {
+            return;
+        }
+
+        GL31.glDeleteTextures(this.textureId);
+        if (this.useDepth) {
+            GL31.glDeleteRenderbuffers(this.depth);
+        }
+        GL31.glDeleteFramebuffers(this.framebuffer);
     }
 
     public void clearColor(float r, float g, float b, float a) {
@@ -86,18 +103,6 @@ public final class FrameBuffer {
         GL31.glClear(this.clearMask);
 
         this.unbind();
-    }
-
-    public void free() {
-        if (this.framebuffer == -1) {
-            return;
-        }
-
-        GL31.glDeleteTextures(this.texture);
-        if (this.useDepth) {
-            GL31.glDeleteRenderbuffers(this.depth);
-        }
-        GL31.glDeleteFramebuffers(this.framebuffer);
     }
 
     public void draw(int width, int height) {

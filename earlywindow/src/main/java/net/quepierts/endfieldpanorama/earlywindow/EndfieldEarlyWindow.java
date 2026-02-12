@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.earlywindow;
 
 import joptsimple.OptionParser;
+import lombok.Getter;
 import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.earlywindow.ImmediateWindowProvider;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL31;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
@@ -68,6 +70,8 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("EARLYDISPLAY");
 
+    private final ResourceManager manager = new ResourceManager();
+
     private long window;
 
     private ScheduledFuture<?> windowTick;
@@ -86,8 +90,11 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
     private String glVersion;
 
+    @Getter
     private RenderScene scene;
     private FrameBuffer mainTarget;
+
+    private MinecraftProfile profile;
 
     private @NotNull Runnable ticker = () -> {};
 
@@ -99,26 +106,27 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
     @Override
     public Runnable initialize(String[] arguments) {
         final OptionParser parser = new OptionParser();
-        var mcversionopt = parser.accepts("fml.mcVersion").withRequiredArg().ofType(String.class);
-        var forgeversionopt = parser.accepts("fml.neoForgeVersion").withRequiredArg().ofType(String.class);
-        var widthopt = parser.accepts("width")
+        var mcVersionOpt = parser.accepts("fml.mcVersion").withRequiredArg().ofType(String.class);
+        var forgeVersionOpt = parser.accepts("fml.neoForgeVersion").withRequiredArg().ofType(String.class);
+        var widthOpt = parser.accepts("width")
                 .withRequiredArg().ofType(Integer.class)
                 .defaultsTo(FMLConfig.getIntConfigValue(FMLConfig.ConfigValue.EARLY_WINDOW_WIDTH));
-        var heightopt = parser.accepts("height")
+        var heightOpt = parser.accepts("height")
                 .withRequiredArg().ofType(Integer.class)
                 .defaultsTo(FMLConfig.getIntConfigValue(FMLConfig.ConfigValue.EARLY_WINDOW_HEIGHT));
-        var maximizedopt = parser.accepts("earlywindow.maximized");
+        var maximizedOpt = parser.accepts("earlywindow.maximized");
+        var usernameOpt = parser.accepts("username").withOptionalArg().ofType(String.class);
         parser.allowsUnrecognizedOptions();
         var parsed = parser.parse(arguments);
-        winWidth = parsed.valueOf(widthopt);
-        winHeight = parsed.valueOf(heightopt);
+        winWidth = parsed.valueOf(widthOpt);
+        winHeight = parsed.valueOf(heightOpt);
         FMLConfig.updateConfig(FMLConfig.ConfigValue.EARLY_WINDOW_WIDTH, winWidth);
         FMLConfig.updateConfig(FMLConfig.ConfigValue.EARLY_WINDOW_HEIGHT, winHeight);
         fbScale = FMLConfig.getIntConfigValue(FMLConfig.ConfigValue.EARLY_WINDOW_FBSCALE);
 
-        this.maximized = parsed.has(maximizedopt) || FMLConfig.getBoolConfigValue(FMLConfig.ConfigValue.EARLY_WINDOW_MAXIMIZED);
+        this.maximized = parsed.has(maximizedOpt) || FMLConfig.getBoolConfigValue(FMLConfig.ConfigValue.EARLY_WINDOW_MAXIMIZED);
 
-        var forgeVersion = parsed.valueOf(forgeversionopt);
+        var forgeVersion = parsed.valueOf(forgeVersionOpt);
         StartupNotificationManager.modLoaderConsumer().ifPresent(c -> c.accept("NeoForge loading " + forgeVersion));
 
         renderScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -127,7 +135,10 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
             return thread;
         });
 
-        var mcVersion = parsed.valueOf(mcversionopt);
+        var mcVersion = parsed.valueOf(mcVersionOpt);
+        var username = parsed.has(usernameOpt) ? parsed.valueOf(usernameOpt) : "Louis_Quepierts";
+
+        this.profile = new MinecraftProfile(username);
 
         initWindow(mcVersion);
         this.initializationFuture = renderScheduler.schedule(() -> initRender(mcVersion, forgeVersion), 1, TimeUnit.MILLISECONDS);
@@ -434,7 +445,9 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
         this.mainTarget.resize(this.fbWidth, this.fbHeight);
         this.mainTarget.clearColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-        this.scene      = new RenderScene();
+        this.manager.register(this.mainTarget);
+
+        this.scene      = new RenderScene(this.manager, this.profile);
         this.scene.resize(this.fbWidth, this.fbHeight);
 
         // clear color
@@ -453,7 +466,6 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
     private final Semaphore     renderLock      = new Semaphore(1);
 
     private static final long   MINFRAMETIME    = TimeUnit.MILLISECONDS.toNanos(10);
-    private static final float  FRAMETIME       = MINFRAMETIME * 1e-9f;
     private long                nextFrameTime   = 0;
 
     private void renderThreadFunc() {
@@ -470,12 +482,12 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
             glfwMakeContextCurrent(window);
 
+            this.mainTarget.resize(this.fbWidth, this.fbHeight);
+            GL31.glViewport(0, 0, this.fbWidth, this.fbHeight);
+
             this.mainTarget.clear();
             this.mainTarget.bind();
-
-            // render
-            this.scene.render(FRAMETIME);
-
+            this.draw(0.1f);
             this.mainTarget.unbind();
             this.mainTarget.draw(this.fbWidth, this.fbHeight);
 
@@ -490,8 +502,15 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
         }
     }
 
+    public void draw(float delta) {
+
+        // render
+        this.scene.render(delta);
+
+    }
+
     public void close() {
-        this.mainTarget.free();
-        this.scene.free();
+        renderScheduler.shutdown();
+        this.manager.free();
     }
 }

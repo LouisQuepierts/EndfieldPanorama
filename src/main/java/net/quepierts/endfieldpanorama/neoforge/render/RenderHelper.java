@@ -38,6 +38,8 @@ public class RenderHelper {
 
     @SubscribeEvent
     public static void onShutdown(final GameShuttingDownEvent event) {
-        quad.close();
+        if (initialized) {
+            quad.close();
+        }
     }
 }

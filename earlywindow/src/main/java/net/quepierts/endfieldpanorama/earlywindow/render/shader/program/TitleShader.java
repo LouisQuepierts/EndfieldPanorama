@@ -1,9 +1,9 @@
-package net.quepierts.endfieldpanorama.earlywindow.render.shader.instance;
+package net.quepierts.endfieldpanorama.earlywindow.render.shader.program;
 
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 import org.jetbrains.annotations.NotNull;
 
-public final class TitleShader extends RenderableShader {
+public final class TitleShader extends ShaderProgram {
 
     public final AbstractUniform uMaskSampler;
     public final AbstractUniform uBackgroundSampler;
@@ -21,8 +21,8 @@ public final class TitleShader extends RenderableShader {
                         .build()
         );
 
-        this.uMaskSampler               = this.getProgram().getUniform("uMaskSampler");
-        this.uBackgroundSampler         = this.getProgram().getUniform("uBackgroundSampler");
+        this.uMaskSampler               = this.getUniform("uMaskSampler");
+        this.uBackgroundSampler         = this.getUniform("uBackgroundSampler");
     }
 
 }

@@ -2,12 +2,13 @@ package net.quepierts.endfieldpanorama.earlywindow.render.pipeline;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.ByteBuffer;
 
 @RequiredArgsConstructor
-public final class Mesh {
+public final class Mesh implements Resource {
 
     private static final int VERTEX_SIZE = 4;
     private static final int INDEX_SIZE = 4;
@@ -80,10 +81,33 @@ public final class Mesh {
             var count = vertexCount;
 
             // put vbo
-            this.format.write(v00, this::vertex);
-            this.format.write(v01, this::vertex);
-            this.format.write(v10, this::vertex);
-            this.format.write(v11, this::vertex);
+            this.format.write(v00, this);
+            this.format.write(v01, this);
+            this.format.write(v10, this);
+            this.format.write(v11, this);
+
+            // put ebo
+            this.index(count);
+            this.index(count + 1);
+            this.index(count + 2);
+            this.index(count + 2);
+            this.index(count + 3);
+            this.index(count);
+
+            vertexCount += 4;
+            indexCount += 6;
+            return this;
+        }
+
+        public Builder quad(float... args) {
+            var count = vertexCount;
+            var size = this.format.getVertexSize();
+
+            // put vbo
+            this.format.write(args, 0, this);
+            this.format.write(args, size, this);
+            this.format.write(args, size * 2, this);
+            this.format.write(args, size * 3, this);
 
             // put ebo
             this.index(count);
@@ -122,6 +146,18 @@ public final class Mesh {
             var ptr = this.vbo.pointer;
             MemoryUtil.memPutFloat(ptr, v);
             this.vbo.pointer += Float.BYTES;
+        }
+        
+        public void floatValue(float v) {
+            var ptr = this.vbo.pointer;
+            MemoryUtil.memPutFloat(ptr, v);
+            this.vbo.pointer += Float.BYTES;
+        }
+        
+        public void intValue(int v) {
+            var ptr = this.vbo.pointer;
+            MemoryUtil.memPutInt(ptr, v);
+            this.vbo.pointer += Integer.BYTES;
         }
 
         private void index(int v) {

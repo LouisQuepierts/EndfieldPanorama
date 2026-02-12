@@ -2,11 +2,12 @@ package net.quepierts.endfieldpanorama.earlywindow.render.shader;
 
 import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.EarlyResourceLoader;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 
 @Getter
-public final class Shader {
+public final class Shader implements Resource {
 
     private final int id;
     private final String name;
@@ -43,6 +44,7 @@ public final class Shader {
         this.upload(source);
     }
 
+    @Override
     public void free() {
         if (this.free || this.id == 0) {
             return;

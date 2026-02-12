@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.lwjgl.opengl.GL31;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,15 +27,19 @@ public final class VertexFormat {
         }
     }
 
-    public void write(float[] src, ByteBuffer dst) {
-        for (int i = 0; i < vertexSize; i++) {
-            dst.putFloat(src[i]);
-        }
+    public void write(float[] src, Mesh.Builder builder) {
+        this.write(src, 0, builder);
     }
 
-    public void write(float[] src, FloatWriter writer) {
-        for (int i = 0; i < vertexSize; i++) {
-            writer.write(src[i]);
+    public void write(float[] src, int offset, Mesh.Builder builder) {
+        int ptr = offset;
+        for (int i = 0; i < this.type.length; i++) {
+            var size    = this.size[i];
+
+            for (int j = 0; j < size; j++) {
+                builder.floatValue(src[ptr]);
+                ptr++;
+            }
         }
     }
 

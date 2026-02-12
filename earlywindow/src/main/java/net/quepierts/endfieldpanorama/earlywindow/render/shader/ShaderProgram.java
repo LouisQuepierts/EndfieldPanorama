@@ -2,12 +2,13 @@ package net.quepierts.endfieldpanorama.earlywindow.render.shader;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 
 import java.util.Map;
 
-public final class ShaderProgram implements UniformContained {
+public class ShaderProgram implements UniformContained, Resource {
 
     private static ShaderProgram last;
 
@@ -68,14 +69,16 @@ public final class ShaderProgram implements UniformContained {
         this.uniforms = builder.build();
     }
 
-    public void use() {
+    @Override
+    public void bind() {
         if (last == this) {
             return;
         }
         GL31.glUseProgram(program);
     }
 
-    public void unuse() {
+    @Override
+    public void unbind() {
         GL31.glUseProgram(0);
         last = null;
     }
@@ -86,16 +89,16 @@ public final class ShaderProgram implements UniformContained {
         }
     }
 
+    @Override
     public void free() {
         GL31.glDeleteProgram(program);
-        vertex.free();
-        fragment.free();
     }
 
     public void bind(@NotNull UniformBuffer buffer) {
         var location = GL31.glGetUniformBlockIndex(program, buffer.getName());
         GL31.glUniformBlockBinding(program, location, buffer.getBindingPoint());
     }
+
 
     @Override
     public @NotNull AbstractUniform getUniform(@NotNull String name) {

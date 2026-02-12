@@ -4,10 +4,7 @@ import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
@@ -52,6 +49,23 @@ public class EarlyResourceLoader {
             return reader.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {
             return "";
+        }
+    }
+
+    public static byte @NotNull [] loadByteArray(final String path) {
+        try (var is     = loadResource(path);
+             var out    = new ByteArrayOutputStream()) {
+
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) != -1) {
+                out.write(buffer, 0, length);
+            }
+
+            return out.toByteArray();
+
+        } catch (IOException e) {
+            return new byte[0];
         }
     }
 

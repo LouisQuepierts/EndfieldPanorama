@@ -1,10 +1,10 @@
-package net.quepierts.endfieldpanorama.earlywindow.render.shader.instance;
+package net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo;
 
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 
-public final class SceneUbo {
+public final class SceneUbo extends UniformBuffer {
 
-    public final UniformBuffer buffer;
+    public static final int BINDING_POINT = 0;
 
     public final AbstractUniform uProjectionMatrix;
     public final AbstractUniform uViewMatrix;
@@ -14,7 +14,7 @@ public final class SceneUbo {
     public final AbstractUniform uTime;
 
     public SceneUbo() {
-        this.buffer = new UniformBuffer(
+        super(
                 "Scene",
                 UniformDefinition.builder()
                         .add("uProjectionMatrix",           UniformType.MAT4)
@@ -23,15 +23,15 @@ public final class SceneUbo {
                         .add("uInverseViewMatrix",          UniformType.MAT4)
                         .add("uTime",                       UniformType.FLOAT)
                         .build(),
-                0
+                SceneUbo.BINDING_POINT
         );
 
-        this.uProjectionMatrix          = buffer.getUniform("uProjectionMatrix");
-        this.uViewMatrix                = buffer.getUniform("uViewMatrix");
-        this.uInverseProjectionMatrix   = buffer.getUniform("uInverseProjectionMatrix");
-        this.uInverseViewMatrix         = buffer.getUniform("uInverseViewMatrix");
+        this.uProjectionMatrix          = this.getUniform("uProjectionMatrix");
+        this.uViewMatrix                = this.getUniform("uViewMatrix");
+        this.uInverseProjectionMatrix   = this.getUniform("uInverseProjectionMatrix");
+        this.uInverseViewMatrix         = this.getUniform("uInverseViewMatrix");
 
-        this.uTime                      = buffer.getUniform("uTime");
+        this.uTime                      = this.getUniform("uTime");
     }
 
 }

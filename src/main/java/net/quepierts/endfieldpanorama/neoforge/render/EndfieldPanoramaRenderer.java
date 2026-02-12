@@ -4,6 +4,8 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.EntityModelSet;
@@ -12,6 +14,10 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.util.Mth;
+import net.quepierts.endfieldpanorama.earlywindow.EndfieldEarlyWindow;
+import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
+import net.quepierts.endfieldpanorama.earlywindow.render.RenderScene;
+import net.quepierts.endfieldpanorama.neoforge.Overlay;
 import net.quepierts.endfieldpanorama.neoforge.animation.AnimatablePlayerModel;
 import net.quepierts.endfieldpanorama.neoforge.animation.AnimationState;
 import net.quepierts.endfieldpanorama.neoforge.reference.Animations;
@@ -48,6 +54,9 @@ public final class EndfieldPanoramaRenderer {
     private float timer;
     private float cachedPartialTick;
 
+    private RenderScene scene;
+    private ResourceManager manager;
+
     private EndfieldPanoramaRenderer() {
         var minecraft           = Minecraft.getInstance();
         var profile             = minecraft.getGameProfile();
@@ -82,6 +91,11 @@ public final class EndfieldPanoramaRenderer {
         this.targetBackground   = this.createTarget(width, height);
     }
 
+    public void setup(RenderScene scene, ResourceManager manager) {
+        this.scene = scene;
+        this.manager = manager;
+    }
+
     public void preparePanorama() {
         this.targetBackground.bindWrite(false);
     }
@@ -92,7 +106,7 @@ public final class EndfieldPanoramaRenderer {
     }
 
     public void renderScene() {
-        var window          = this.minecraft.getWindow();
+        /*var window          = this.minecraft.getWindow();
         var width           = window.getWidth();
         var height          = window.getHeight();
 
@@ -104,7 +118,13 @@ public final class EndfieldPanoramaRenderer {
 
         this.prepareMask(this.cachedPartialTick);
         mainTarget.bindWrite(false);
-        this.blitCharacter();
+        this.blitCharacter();*/
+        var mainTarget      = this.minecraft.getMainRenderTarget();
+
+        mainTarget.bindWrite(false);
+        this.scene.render(this.cachedPartialTick * 0.05f);
+
+        VertexBuffer.unbind();
     }
 
     @SuppressWarnings("all")
@@ -178,11 +198,18 @@ public final class EndfieldPanoramaRenderer {
         var aspectRatio = this.calculateAspectRatio(width, height);
         this.projectionMatrix.setPerspective(70.0f, aspectRatio, 0.05f, 100.0f);
         this.invProjectionMatrix.set(this.projectionMatrix).invert();
+
+        if (this.scene != null) {
+            this.scene.resize(width, height);
+        }
     }
 
     public void destroy() {
         this.maskTarget.destroyBuffers();
         this.targetBackground.destroyBuffers();
+
+        this.manager.free();
+//        this.window.close();
     }
 
     public static void setup() {
