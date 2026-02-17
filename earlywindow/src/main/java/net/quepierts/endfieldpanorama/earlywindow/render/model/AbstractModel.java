@@ -1,9 +1,12 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.model;
 
+import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.Resource;
+import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.Mesh;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderProgram;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Skeleton;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractModel implements Resource {
@@ -19,11 +22,17 @@ public abstract class AbstractModel implements Resource {
     public static final int MASK_UPPER  = 31;
     public static final int MASK_LOWER  = 47;
 
+    @Getter
+    private final Skeleton skeleton;
+
     private final Mesh mesh;
     private final VertexBuffer buffer;
 
-    protected AbstractModel(Mesh mesh) {
-        this.mesh = mesh;
+    protected AbstractModel(
+            @NotNull Skeleton skeleton
+    ) {
+        this.skeleton = skeleton;
+        this.mesh = mesh(skeleton);
         this.buffer = new VertexBuffer();
         this.buffer.upload(this.mesh);
     }
@@ -57,13 +66,40 @@ public abstract class AbstractModel implements Resource {
         this.buffer.unbind();
     }
 
+    protected static Mesh mesh(@NotNull Skeleton skeleton) {
+        var builder = Mesh.builder(DefaultVertexFormats.CHARACTER, 1024);
+
+        for (var bone : skeleton) {
+            var id          = bone.getId();
+
+            for (var box : bone.getBoxes()) {
+                AbstractModel.bone(
+                        builder,
+                        box.getX(),
+                        box.getY(),
+                        box.getZ(),
+                        box.getDx(),
+                        box.getDy(),
+                        box.getDz(),
+                        box.getInflate(),
+                        box.getU(),
+                        box.getV(),
+                        64,
+                        id
+                );
+            }
+        }
+
+        return builder.build();
+    }
+
     protected static void bone(
             Mesh.Builder builder,
-            int px,         int py,         int pz,
-            int dx,         int dy,         int dz,
+            float px,           float py,           float pz,
+            float dx,           float dy,           float dz,
             float inflate,
-            int uOffset,    int vOffset,
-            int textureSize, int group
+            float uOffset,      float vOffset,
+            int   textureSize,  int   group
     ) {
 
         float x0 = px - inflate;

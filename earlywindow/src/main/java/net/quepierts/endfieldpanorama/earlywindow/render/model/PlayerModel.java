@@ -1,52 +1,104 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.model;
 
-import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
-import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.Mesh;
+import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Skeleton;
+import org.jetbrains.annotations.NotNull;
 
 public final class PlayerModel extends AbstractModel {
 
-    public PlayerModel(boolean slim) {
-        super(PlayerModel.build(slim));
+    @Getter
+    private final boolean slim;
+
+    public static PlayerModel create(boolean slim) {
+        var skeleton    = skeleton(slim);
+        return new PlayerModel(slim, skeleton);
     }
 
-    private static Mesh build(boolean slim) {
-        var builder = Mesh.builder(DefaultVertexFormats.CHARACTER, 1024);
+    private PlayerModel(
+                        boolean     slim,
+            @NotNull    Skeleton    skeleton
+    ) {
+        super(skeleton);
+        this.slim = slim;
+    }
 
-        // head & hat
-        AbstractModel.bone(builder, -4, 0, -4, 8, 8, 8, 0.0f, 0, 0, 64, 0);
-        AbstractModel.bone(builder, -4, 0, -4, 8, 8, 8, 0.5f, 32, 0, 64, 0);
+    private static Skeleton skeleton(boolean slim) {
 
-        // body & shirt
-        AbstractModel.bone(builder, -4, -12, -2, 8, 12, 4, 0.0f, 16, 16, 64, 1);
-        AbstractModel.bone(builder, -4, -12, -2, 8, 12, 4, 0.25f, 16, 32, 64, 1);
+        int armWidth = slim ? 3 : 4;
+        int armPivot = slim ? 5 : 6;
 
-        if (slim) {
-            // right arm & sleeve
-            AbstractModel.bone(builder, 4, -12, -2, 3, 12, 4, 0.0f, 40, 16, 64, 2);
-            AbstractModel.bone(builder, 4, -12, -2, 3, 12, 4, 0.25f, 40, 32, 64, 2);
+        var builder     = Skeleton.builder()
+                .begin("head", 0, 24, 0)
+                    .position(-4, 24, -4)
+                    .box(0.0f)
+                        .scale(8, 8, 8)
+                        .uv(0, 0)
+                    .end()
+                    .box(0.5f)
+                        .scale(8, 8, 8)
+                        .uv(32, 0)
+                    .end()
+                .end()
 
-            // left arm & sleeve
-            AbstractModel.bone(builder, -7, -12, -2, 3, 12, 4, 0.0f, 32, 48, 64, 3);
-            AbstractModel.bone(builder, -7, -12, -2, 3, 12, 4, 0.25f, 48, 48, 64, 3);
+                .begin("body", 0, 12, 0)
+                    .position(-4, 12, -2)
+                    .box(0.0f)
+                        .scale(8, 12, 4)
+                        .uv(16, 16)
+                    .end()
+                    .box(0.25f)
+                        .scale(8, 12, 4)
+                        .uv(16, 32)
+                    .end()
+                .end()
 
-        } else {
-            // right arm & sleeve
-            AbstractModel.bone(builder, 4, -12, -2, 4, 12, 4, 0.0f, 40, 16, 64, 2);
-            AbstractModel.bone(builder, 4, -12, -2, 4, 12, 4, 0.25f, 40, 32, 64, 2);
+                .begin("right_arm", armPivot, 22, 0)
+                    .position(4, 12, -2)
+                    .box(0.0f)
+                        .scale(armWidth, 12, 4)
+                        .uv(40, 16)
+                    .end()
+                    .box(0.25f)
+                        .scale(armWidth, 12, 4)
+                        .uv(40, 32)
+                    .end()
+                .end()
 
-            // left arm & sleeve
-            AbstractModel.bone(builder, -8, -12, -2, 4, 12, 4, 0.0f, 32, 48, 64, 3);
-            AbstractModel.bone(builder, -8, -12, -2, 4, 12, 4, 0.25f, 48, 48, 64, 3);
+                .begin("left_arm", -armPivot, 12, 0)
+                    .position(-7, 12, -2)
+                    .box(0.0f)
+                        .scale(armWidth, 12, 4)
+                        .uv(32, 48)
+                    .end()
+                    .box(0.25f)
+                        .scale(armWidth, 12, 4)
+                        .uv(48, 48)
+                    .end()
+                .end()
 
-        }
+                .begin("right_leg", 2, 12, 0)
+                    .position(0, 0, -2)
+                    .box(0.0f)
+                        .scale(4, 12, 4)
+                        .uv(0, 16)
+                    .end()
+                    .box(0.0f)
+                        .scale(4, 12, 4)
+                        .uv(0, 32)
+                    .end()
+                .end()
 
-        // right leg & pants
-        AbstractModel.bone(builder, 0, -24, -2, 4, 12, 4, 0.0f, 0, 16, 64, 4);
-        AbstractModel.bone(builder, 0, -24, -2, 4, 12, 4, 0.25f, 0, 32, 64, 4);
-
-        // left leg & pants
-        AbstractModel.bone(builder, -4, -24, -2, 4, 12, 4, 0.0f, 16, 48, 64, 5);
-        AbstractModel.bone(builder, -4, -24, -2, 4, 12, 4, 0.25f, 0, 48, 64, 5);
+                .begin("left_leg", -2, 12, 0)
+                    .position(-4, 0, -2)
+                    .box(0.0f)
+                        .scale(4, 12, 4)
+                        .uv(16, 48)
+                    .end()
+                    .box(0.0f)
+                        .scale(4, 12, 4)
+                        .uv(0, 48)
+                    .end()
+                .end();
 
         return builder.build();
     }
