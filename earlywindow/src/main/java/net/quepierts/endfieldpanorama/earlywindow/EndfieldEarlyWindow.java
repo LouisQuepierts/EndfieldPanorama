@@ -5,7 +5,7 @@ import lombok.Getter;
 import net.neoforged.fml.loading.FMLConfig;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
 import net.neoforged.neoforgespi.earlywindow.ImmediateWindowProvider;
-import net.quepierts.endfieldpanorama.earlywindow.render.RenderScene;
+import net.quepierts.endfieldpanorama.earlywindow.scene.RenderScene;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.FrameBuffer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -487,7 +487,7 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
             this.mainTarget.clear();
             this.mainTarget.bind();
-            this.draw(0.1f);
+            this.draw(0.05f);
             this.mainTarget.unbind();
             this.mainTarget.draw(this.fbWidth, this.fbHeight);
 

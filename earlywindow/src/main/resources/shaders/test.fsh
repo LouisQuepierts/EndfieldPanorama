@@ -129,7 +129,7 @@ vec3 renderBackground()
     // ---------------------
     // Plane
     // ---------------------
-    float planeY        = -1.0;
+    float planeY        = 0.0;
     float t             = (planeY - rayOrigin.y) / rayDir.y;
     vec3 hit            = rayOrigin + rayDir * t;
     float heightMask    = step(t, 0.0);

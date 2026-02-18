@@ -22,7 +22,12 @@ public final class VertexFormat {
 
     public void apply() {
         for (int i = 0; i < size.length; i++) {
-            GL31.glVertexAttribPointer(i, size[i], type[i], false, stride, offset[i]);
+            int glType = type[i];
+            if (glType == GL31.GL_FLOAT) {
+                GL31.glVertexAttribPointer(i, size[i], glType, false, stride, offset[i]);
+            } else {
+                GL31.glVertexAttribIPointer(i, size[i], glType, stride, offset[i]);
+            }
             GL31.glEnableVertexAttribArray(i);
         }
     }

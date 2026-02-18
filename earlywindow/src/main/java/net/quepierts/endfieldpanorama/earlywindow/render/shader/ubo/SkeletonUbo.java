@@ -11,9 +11,9 @@ public final class SkeletonUbo extends UniformBuffer {
 
     public static final int BINDING_POINT   = 1;
     public static final int MAT4_SIZE       = 16 * 4;
+    public static final int MAX_BONE        = 64;
 
     private final FloatBuffer   view;
-    private final float[]       cache;
 
     @Getter
     private final int           length;
@@ -21,28 +21,53 @@ public final class SkeletonUbo extends UniformBuffer {
     public SkeletonUbo(int length) {
 
         super(
-                "AnimationTransform",
-                length * MAT4_SIZE,
+                "AnimationSkeleton",
+                MAX_BONE * MAT4_SIZE,
                 SkeletonUbo.BINDING_POINT
         );
 
         this.length = length;
 
         this.view = this.buffer.asFloatBuffer();
-        this.cache = new float[16];
 
+        this.identity();
     }
 
     public void put(int index, @NotNull Matrix4f matrix) {
         view.position(index * 16);
-        view.put(matrix.get(cache));
+        matrix.get(view);
+
+        this.dirty = true;
+    }
+
+    public void put(Matrix4f[] matrices) {
+        var ptr = 0;
+
+        for (var matrix : matrices) {
+            this.view.position(ptr);
+            matrix.get(this.view);
+            ptr += 16;
+        }
+
+        this.dirty = true;
+    }
+
+    public void identity() {
+        var mat = new Matrix4f();
+        var ptr = 0;
+
+        for (int i = 0; i < this.length; i++) {
+            this.view.position(ptr);
+            mat.get(this.view);
+            ptr += 16;
+        }
 
         this.dirty = true;
     }
 
     public void put(float[] value) {
 
-        if (this.length * 16 >= value.length) {
+        if (this.length * 16 > value.length) {
             throw new IllegalArgumentException("Value length is not equal to length * 16");
         }
 

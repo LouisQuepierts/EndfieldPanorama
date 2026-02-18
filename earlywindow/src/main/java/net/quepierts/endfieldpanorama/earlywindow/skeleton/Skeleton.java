@@ -13,14 +13,23 @@ public final class Skeleton implements Iterable<Bone> {
 
     private final Bone[]    bones;
     private final float[]   cache;
+    private final Matrix4f[] c;
 
     private Skeleton(List<Bone> bones) {
         this.bones = bones.toArray(Bone[]::new);
         this.cache = new float[16 * bones.size()];
+        this.c = new Matrix4f[bones.size()];
+        for (int i = 0; i < this.c.length; i++) {
+            this.c[i] = new Matrix4f();
+        }
     }
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public @NotNull SkeletonUbo createUbo() {
+        return new SkeletonUbo(bones.length);
     }
 
     public void apply(@NotNull SkeletonUbo ubo) {
@@ -29,7 +38,13 @@ public final class Skeleton implements Iterable<Bone> {
             throw new IllegalArgumentException("SkeletonUbo length is too small");
         }
 
-        final Matrix4f  matrix4f    = new Matrix4f();
+        for (int i = 0; i < this.bones.length; i++) {
+            this.bones[i].getTransform().getMatrix(c[i]);
+        }
+
+        ubo.put(this.c);
+
+        /*final Matrix4f  matrix4f    = new Matrix4f();
 
         for (
                 int i = 0, offset = 0;
@@ -41,7 +56,7 @@ public final class Skeleton implements Iterable<Bone> {
             matrix4f.get(this.cache, offset);
         }
 
-        ubo.put(this.cache);
+        ubo.put(this.cache);*/
 
     }
 

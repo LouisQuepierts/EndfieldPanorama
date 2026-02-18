@@ -40,7 +40,7 @@ public final class PlayerModel extends AbstractModel {
                     .end()
                 .end()
 
-                .begin("body", 0, 12, 0)
+                .begin("body", 0, 24, 0)
                     .position(-4, 12, -2)
                     .box(0.0f)
                         .scale(8, 12, 4)
@@ -64,7 +64,7 @@ public final class PlayerModel extends AbstractModel {
                     .end()
                 .end()
 
-                .begin("left_arm", -armPivot, 12, 0)
+                .begin("left_arm", -armPivot, 22, 0)
                     .position(-7, 12, -2)
                     .box(0.0f)
                         .scale(armWidth, 12, 4)

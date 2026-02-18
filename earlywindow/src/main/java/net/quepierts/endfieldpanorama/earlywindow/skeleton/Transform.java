@@ -125,10 +125,10 @@ public final class Transform {
         }
 
         if (this.hasRotated) {
-            matrix.rotateYXZ( // deg 2 rad
+            matrix.rotateZYX(
+                    rz * Mth.DEG_TO_RAD,
                     ry * Mth.DEG_TO_RAD,
-                    rx * Mth.DEG_TO_RAD,
-                    rz * Mth.DEG_TO_RAD
+                    rx * Mth.DEG_TO_RAD
             );
         }
 

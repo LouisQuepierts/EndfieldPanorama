@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.quepierts.endfieldpanorama.earlywindow.EndfieldEarlyWindow;
 import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
-import net.quepierts.endfieldpanorama.earlywindow.render.RenderScene;
+import net.quepierts.endfieldpanorama.earlywindow.scene.RenderScene;
 import net.quepierts.endfieldpanorama.neoforge.render.EndfieldPanoramaRenderer;
 
 import java.util.Optional;

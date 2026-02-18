@@ -50,6 +50,7 @@ public final class Mesh implements Resource {
         private final DynamicBuffer vbo;
         private final DynamicBuffer ebo;
 
+        @Getter
         private int vertexCount;
         private int indexCount;
 
@@ -118,7 +119,6 @@ public final class Mesh implements Resource {
             this.index(count);
 
             vertexCount += 4;
-            indexCount += 6;
             return this;
         }
 
@@ -160,10 +160,33 @@ public final class Mesh implements Resource {
             this.vbo.pointer += Integer.BYTES;
         }
 
-        private void index(int v) {
+        public void floats(float... v) {
+            var ptr = this.vbo.pointer;
+            for (float value : v) {
+                MemoryUtil.memPutFloat(ptr, value);
+                ptr += Float.BYTES;
+            }
+            this.vbo.pointer = ptr;
+        }
+
+        public void ints(int... v) {
+            var ptr = this.vbo.pointer;
+            for (int value : v) {
+                MemoryUtil.memPutInt(ptr, value);
+                ptr += Integer.BYTES;
+            }
+            this.vbo.pointer = ptr;
+        }
+
+        public void countVertex() {
+            this.vertexCount++;
+        }
+
+        public void index(int v) {
             var ptr = this.ebo.pointer;
             MemoryUtil.memPutInt(ptr, v);
             this.ebo.pointer += Integer.BYTES;
+            this.indexCount++;
         }
 
         public Mesh build() {

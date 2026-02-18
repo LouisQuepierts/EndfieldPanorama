@@ -24,7 +24,7 @@ out vec2    texCoord;
 
 void main() {
     vec4 position = vec4(Position, 1.0);
-    position = uBoneTransforms[Group] * position;
-    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * position;
+    mat4 bone = uBoneTransforms[Group];
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * bone * position;
     texCoord = UV;
 }

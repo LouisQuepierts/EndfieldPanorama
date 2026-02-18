@@ -12,7 +12,7 @@ public class Shaders {
     public static class Vertex {
 
         public static final String BLIT             = "blit_screen";
-        public static final String CHARACTER        = "position_tex";
+        public static final String CHARACTER        = "character";
 
     }
 

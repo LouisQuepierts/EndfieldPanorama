@@ -1,16 +1,18 @@
-package net.quepierts.endfieldpanorama.earlywindow.render;
+package net.quepierts.endfieldpanorama.earlywindow.scene;
 
 import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
 import net.quepierts.endfieldpanorama.earlywindow.MinecraftProfile;
+import net.quepierts.endfieldpanorama.earlywindow.animation.definition.RawAnimationSet;
+import net.quepierts.endfieldpanorama.earlywindow.render.Graphics;
+import net.quepierts.endfieldpanorama.earlywindow.render.ImageTexture;
 import net.quepierts.endfieldpanorama.earlywindow.render.model.PlayerModel;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderManager;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.CharacterShader;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SceneUbo;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.TestShader;
+import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SkeletonUbo;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL31;
 import org.slf4j.Logger;
@@ -35,8 +37,7 @@ public final class RenderScene {
     private final Matrix4f          matView;
     private final Matrix4f          matViewInverse;
 
-    private final Vector3f          cameraPosition;
-    private final Quaternionf       cameraRotation;
+    private final Camera            camera;
 
     private final Graphics          graphics;
 
@@ -51,6 +52,10 @@ public final class RenderScene {
     private final CharacterShader   characterShader;
 
     private final PlayerModel       playerModel;
+    private final SkeletonUbo       skeletonUbo;
+
+    private final RawAnimationSet   animations;
+    private final SceneAnimation    animation;
 
     // accept data from joml
     private final float[]       jomlArr;
@@ -72,8 +77,7 @@ public final class RenderScene {
         this.matView                = new Matrix4f();
         this.matViewInverse         = new Matrix4f();
 
-        this.cameraPosition         = new Vector3f(0f, 0f, 0f);
-        this.cameraRotation         = new Quaternionf().rotateX(-0.2f);
+        this.camera                 = new Camera();
 
         this.graphics               = new Graphics();
 
@@ -82,18 +86,26 @@ public final class RenderScene {
 
         this.testShader             = new TestShader(this.shaders);
         this.characterShader        = new CharacterShader(this.shaders);
-        this.defaultPlayerTexture   = ImageTexture.fromResource("player.png", GL31.GL_NEAREST, GL31.GL_REPEAT);
+        this.defaultPlayerTexture   = ImageTexture.fromResource("slim.png", GL31.GL_NEAREST, GL31.GL_REPEAT);
         this.profilePlayerTexture   = this.createProfilePlayerTexture();
 
-        this.playerModel            = new PlayerModel(true);
+        this.playerModel            = PlayerModel.create(true);
+        this.skeletonUbo            = this.playerModel.getSkeleton().createUbo();
+        this.jomlArr                = new float[16];
 
-        this.jomlArr = new float[16];
+        this.animations             = RawAnimationSet.fromSource("animations/slim.json");
+        this.animation              = new SceneAnimation(
+                this.animations,
+                this.playerModel,
+                this.camera
+        );
 
         this.sceneUbo.uTime.set1f(this.time);
         this.testShader.bind(this.sceneUbo);
         this.testShader.uTexture.set1i(GL31.GL_TEXTURE0);
 
         this.characterShader.bind(this.sceneUbo);
+        this.characterShader.bind(this.skeletonUbo);
         this.characterShader.uTexture.set1i(GL31.GL_TEXTURE0);
 
         resourceManager.register(this.testShader);
@@ -116,12 +128,15 @@ public final class RenderScene {
         var profile = this.profile;
 
         var scene   = new RenderScene(manager, profile);
-        scene.time = this.time;
+        scene.time  = this.time;
         scene.resize(this.width, this.height);
+        scene.animation.cloneState(this.animation);
         return scene;
     }
 
     public void render(float delta) {
+
+//        delta *= 0.1f;
 
         if (this.profile.isDone() && !this.syncPlayerTexture) {
 
@@ -152,11 +167,17 @@ public final class RenderScene {
 
         this.graphics.blit(this.testShader);
 
+        this.animation.update(delta);
+        this.playerModel.getSkeleton().apply(this.skeletonUbo);
+        this.skeletonUbo.upload();
+        this.skeletonUbo.bind();
 
+        var modelTransform = new Matrix4f();
+        this.playerModel.getTransform().getMatrix(modelTransform);
         this.characterShader.uModelMatrix.setMatrix4f(
                 new Matrix4f()
-                        .translate(0f, 0f, -3.0f)
-                        .scale(1f / 16f)
+                        .scale(0.0625f)
+                        .mul(modelTransform)
         );
 
         // enable depth
@@ -197,13 +218,16 @@ public final class RenderScene {
     }
 
     private void updateViewMatrix() {
-        this.matView.identity()
+/*        this.matView.identity()
                 .translate(0.0f, 0.0f, time)
                 .rotateX(0.2f);
 
         this.matViewInverse.identity()
                 .translate(0.0f, 0.0f, -time)
-                .rotateX(-0.2f);
+                .rotateX(-0.2f);*/
+
+        this.camera.getViewMatrix(this.matView);
+        this.camera.getInverseViewMatrix(this.matViewInverse);
 
         this.sceneUbo.uViewMatrix.setMatrix4f(this.matView.get(this.jomlArr));
         this.sceneUbo.uInverseViewMatrix.setMatrix4f(this.matViewInverse.get(this.jomlArr));

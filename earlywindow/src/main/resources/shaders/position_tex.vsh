@@ -20,5 +20,5 @@ void main()
 {
     texCoord = UV;
     vec4 pos = vec4(Position, 1.0);
-    gl_Position = uProjectionMatrix * uModelMatrix * pos;
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * pos;
 }

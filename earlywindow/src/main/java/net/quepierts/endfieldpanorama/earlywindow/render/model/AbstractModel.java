@@ -7,6 +7,7 @@ import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.Mesh;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderProgram;
 import net.quepierts.endfieldpanorama.earlywindow.skeleton.Skeleton;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Transform;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractModel implements Resource {
@@ -21,6 +22,9 @@ public abstract class AbstractModel implements Resource {
     public static final int MASK_ALL    = 63;
     public static final int MASK_UPPER  = 31;
     public static final int MASK_LOWER  = 47;
+
+    @Getter
+    private final Transform transform = new Transform();
 
     @Getter
     private final Skeleton skeleton;
@@ -116,8 +120,8 @@ public abstract class AbstractModel implements Resource {
                 x1, y1, z1,
                 x0, y1, z1,
                 x0, y0, z1,
-                uOffset + dz, vOffset + dz,
-                dx, dy,
+                uOffset + dz * 2 + dx * 2, vOffset + dz,
+                -dx, dy,
                 textureSize, group
         );
 
@@ -128,32 +132,32 @@ public abstract class AbstractModel implements Resource {
                 x0, y1, z0,
                 x1, y1, z0,
                 x1, y0, z0,
-                uOffset + dz * 2 + dx, vOffset + dz,
-                dx, dy,
+                uOffset + dz + dx, vOffset + dz,
+                -dx, dy,
                 textureSize, group
         );
 
         // left
         quad(
                 builder,
-                x0, y0, z0,
-                x0, y1, z0,
-                x0, y1, z1,
-                x0, y0, z1,
-                uOffset, vOffset + dz,
-                dz, dy,
+                x1, y0, z0,
+                x1, y1, z0,
+                x1, y1, z1,
+                x1, y0, z1,
+                uOffset + dz, vOffset + dz,
+                -dz, dy,
                 textureSize, group
         );
 
         // right
         quad(
                 builder,
-                x1, y0, z1,
-                x1, y1, z1,
-                x1, y1, z0,
-                x1, y0, z0,
-                uOffset + dz + dx, vOffset + dz,
-                dz, dy,
+                x0, y0, z1,
+                x0, y1, z1,
+                x0, y1, z0,
+                x0, y0, z0,
+                uOffset + dz * 2 + dx, vOffset + dz,
+                -dz, dy,
                 textureSize, group
         );
 
@@ -200,13 +204,30 @@ public abstract class AbstractModel implements Resource {
         float u1 = uv(u + w, textureSize);
         float v1 = uv(v + h, textureSize);
 
-        // x y z u v g
-        builder.quad(
-                x0, y0, z0, u0, v1, group,
-                x1, y1, z1, u0, v0, group,
-                x2, y2, z2, u1, v0, group,
-                x3, y3, z3, u1, v1, group
-        );
+        int idx = builder.getVertexCount();
+
+        builder.floats(x0, y0, z0, u0, v1);
+        builder.intValue(group);
+        builder.countVertex();
+
+        builder.floats(x1, y1, z1, u0, v0);
+        builder.intValue(group);
+        builder.countVertex();
+
+        builder.floats(x2, y2, z2, u1, v0);
+        builder.intValue(group);
+        builder.countVertex();
+
+        builder.floats(x3, y3, z3, u1, v1);
+        builder.intValue(group);
+        builder.countVertex();
+
+        builder.index(idx);
+        builder.index(idx + 1);
+        builder.index(idx + 2);
+        builder.index(idx + 2);
+        builder.index(idx + 3);
+        builder.index(idx);
     }
 
     protected static float uv(float px, int textureSize) {
