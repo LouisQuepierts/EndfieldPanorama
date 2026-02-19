@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.earlywindow.skeleton;
 
 import lombok.Getter;
+import net.quepierts.endfieldpanorama.earlywindow.scene.Transform;
 
 @Getter
 public final class Bone {

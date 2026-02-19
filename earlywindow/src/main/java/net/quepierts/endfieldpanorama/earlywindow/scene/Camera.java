@@ -1,9 +1,9 @@
 package net.quepierts.endfieldpanorama.earlywindow.scene;
 
+import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
 
 public final class Camera {
 
@@ -24,10 +24,22 @@ public final class Camera {
         this.yaw    = yaw   *  Mth.DEG_TO_RAD;
     }
 
+    public void translate(float x, float y, float z) {
+        this.x += x * SCALE;
+        this.y += y * SCALE;
+        this.z += z * SCALE;
+    }
+
+    public void rotate(float pitch, float yaw, float roll) {
+        this.roll   += roll  *  Mth.DEG_TO_RAD;
+        this.pitch  += pitch *  Mth.DEG_TO_RAD;
+        this.yaw    += yaw   *  Mth.DEG_TO_RAD;
+    }
+
     public void getViewMatrix(@NotNull Matrix4f output) {
         output.identity()
                 .rotateY(-yaw)
-                .rotateX(-pitch)
+                .rotateX(pitch)
                 .rotateZ(-roll)
                 .translate(-x, -y, -z);
     }
@@ -35,7 +47,7 @@ public final class Camera {
     public void getInverseViewMatrix(@NotNull Matrix4f output) {
         output.identity()
                 .translate(-x, y, -z)
-                .rotateZ(roll)
+                .rotateZ(-roll)
                 .rotateX(pitch)
                 .rotateY(yaw);
     }

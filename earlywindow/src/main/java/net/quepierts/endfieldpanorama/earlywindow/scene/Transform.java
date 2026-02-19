@@ -1,4 +1,4 @@
-package net.quepierts.endfieldpanorama.earlywindow.skeleton;
+package net.quepierts.endfieldpanorama.earlywindow.scene;
 
 import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.Mth;
@@ -84,6 +84,22 @@ public final class Transform {
         this.hasRotated = other.hasRotated;
         this.hasScaled = other.hasScaled;
         this.hasPivoted = other.hasPivoted;
+    }
+
+    public void translate(float x, float y, float z) {
+        this.x += x;
+        this.y += y;
+        this.z += z;
+
+        this.hasTranslated = x != 0.0f || y != 0.0f || z != 0.0f;
+    }
+
+    public void rotate(float rx, float ry, float rz) {
+        this.rx += rx;
+        this.ry += ry;
+        this.rz += rz;
+
+        this.hasRotated = rx != 0.0f || ry != 0.0f || rz != 0.0f;
     }
 
     public @NotNull Transform copy() {

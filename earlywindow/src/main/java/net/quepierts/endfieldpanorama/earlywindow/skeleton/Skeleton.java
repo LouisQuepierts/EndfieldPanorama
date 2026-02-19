@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.earlywindow.skeleton;
 
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SkeletonUbo;
+import net.quepierts.endfieldpanorama.earlywindow.scene.Transform;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
@@ -73,7 +74,7 @@ public final class Skeleton implements Iterable<Bone> {
 
         private final   List<Box>   boxes           = new ArrayList<>();
         private final   List<Bone>  bones           = new ArrayList<>();
-        private final   Transform   transform       = new Transform();
+        private final Transform transform       = new Transform();
 
         private         String      current;
         private         Box         box;

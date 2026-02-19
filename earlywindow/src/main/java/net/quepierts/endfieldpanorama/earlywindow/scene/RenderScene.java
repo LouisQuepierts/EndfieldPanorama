@@ -1,5 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.scene;
 
+import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
 import net.quepierts.endfieldpanorama.earlywindow.MinecraftProfile;
 import net.quepierts.endfieldpanorama.earlywindow.animation.definition.RawAnimationSet;
@@ -173,6 +174,11 @@ public final class RenderScene {
         this.skeletonUbo.bind();
 
         var modelTransform = new Matrix4f();
+
+        if (this.animation.isLooping()) {
+            this.playerModel.getTransform().translate(0.0f, 0.0f, this.animation.getCurrentTime() * -16f);
+        }
+
         this.playerModel.getTransform().getMatrix(modelTransform);
         this.characterShader.uModelMatrix.setMatrix4f(
                 new Matrix4f()
@@ -185,6 +191,10 @@ public final class RenderScene {
         this.playerModel.draw(this.characterShader);
         GL31.glDisable(GL31.GL_DEPTH_TEST);
         texture.unbind(0);
+    }
+
+    public void trigger() {
+        this.animation.trigger();
     }
 
     public void free() {
@@ -226,6 +236,9 @@ public final class RenderScene {
                 .translate(0.0f, 0.0f, -time)
                 .rotateX(-0.2f);*/
 
+        if (this.animation.isLooping()) {
+            this.camera.translate(0.0f, 0.0f, this.animation.getCurrentTime() * -16f);
+        }
         this.camera.getViewMatrix(this.matView);
         this.camera.getInverseViewMatrix(this.matViewInverse);
 

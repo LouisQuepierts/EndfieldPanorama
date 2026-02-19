@@ -7,7 +7,7 @@ import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.Mesh;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderProgram;
 import net.quepierts.endfieldpanorama.earlywindow.skeleton.Skeleton;
-import net.quepierts.endfieldpanorama.earlywindow.skeleton.Transform;
+import net.quepierts.endfieldpanorama.earlywindow.scene.Transform;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractModel implements Resource {
@@ -24,7 +24,7 @@ public abstract class AbstractModel implements Resource {
     public static final int MASK_LOWER  = 47;
 
     @Getter
-    private final Transform transform = new Transform();
+    private final Transform transform   = new Transform();
 
     @Getter
     private final Skeleton skeleton;

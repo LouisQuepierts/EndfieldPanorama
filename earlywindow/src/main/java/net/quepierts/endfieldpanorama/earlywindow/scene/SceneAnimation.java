@@ -1,5 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.scene;
 
+import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.animation.*;
 import net.quepierts.endfieldpanorama.earlywindow.animation.definition.RawAnimationSet;
 import net.quepierts.endfieldpanorama.earlywindow.render.model.PlayerModel;
@@ -19,8 +20,9 @@ public final class SceneAnimation {
 
     private Phrase phrase = Phrase.BEGIN;
 
+    @Getter
     private float currentTime = 0f;
-    private float transitionDuration = 0.1f;
+    private float transitionDuration = 0.2f;
     private float transitionElapsed = 0f;
 
     private boolean signalReceived = false;
@@ -106,14 +108,14 @@ public final class SceneAnimation {
         currentTime += delta;
         state.setTimer(currentTime);
 
-        program.sample(
+        /*program.sample(
                 state,
                 LOCATION_BEGIN,
                 AnimationProgram.OUTPUT_BUFFER,
                 1.0f
-        );
+        );*/
 
-        /*switch (phrase) {
+        switch (phrase) {
             case BEGIN:
                 program.sample(
                         state,
@@ -132,25 +134,36 @@ public final class SceneAnimation {
                 transitionElapsed   += delta;
                 float t             = Math.min(transitionElapsed / transitionDuration, 1f);
 
-                program.sample(
-                        state,
-                        LOCATION_BEGIN,
-                        AnimationProgram.OUTPUT_BUFFER,
-                        1.0f
-                );
+                if (t < 1.0f) {
+                    program.sample(
+                            state,
+                            LOCATION_BEGIN,
+                            AnimationProgram.OUTPUT_BUFFER,
+                            1.0f
+                    );
 
-                state.setTimer(transitionElapsed);
-                program.sample(
-                        state,
-                        LOCATION_TRANSITION,
-                        AnimationProgram.OUTPUT_BUFFER,
-                        t
-                );
+                    state.setTimer(transitionElapsed);
+                    program.sample(
+                            state,
+                            LOCATION_TRANSITION,
+                            AnimationProgram.OUTPUT_BUFFER,
+                            t
+                    );
+                } else {
+                    state.setTimer(transitionElapsed);
+                    program.sample(
+                            state,
+                            LOCATION_TRANSITION,
+                            AnimationProgram.OUTPUT_BUFFER,
+                            1.0f
+                    );
 
-                if (t >= 1.0f) {
-                    phrase = Phrase.LOOP;
-                    currentTime     = 0.0f;
+                    if (transitionElapsed >= program.getAnimation(LOCATION_TRANSITION).getDuration()) {
+                        phrase      = Phrase.LOOP;
+                        currentTime = 0f;
+                    }
                 }
+
                 break;
 
             case LOOP:
@@ -161,9 +174,13 @@ public final class SceneAnimation {
                         1.0f
                 );
                 break;
-        }*/
+        }
 
         program.flush(state);
+    }
+
+    public boolean isLooping() {
+        return phrase == Phrase.LOOP;
     }
 
 

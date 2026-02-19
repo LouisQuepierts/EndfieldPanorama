@@ -53,6 +53,9 @@ public final class EndfieldPanoramaRenderer {
     private RenderScene scene;
     private ResourceManager manager;
 
+    private boolean triggered;
+    private float triggerTimer;
+
     private EndfieldPanoramaRenderer() {
         var minecraft           = Minecraft.getInstance();
         var profile             = minecraft.getGameProfile();
@@ -115,10 +118,21 @@ public final class EndfieldPanoramaRenderer {
         this.prepareMask(this.cachedPartialTick);
         mainTarget.bindWrite(false);
         this.blitCharacter();*/
+
+        var delta = this.cachedPartialTick * 0.05f;
+        if (!triggered && this.triggerTimer > 0.0f) {
+            this.triggerTimer -= delta;
+
+            if (this.triggerTimer <= 0.0f) {
+                this.triggered = true;
+                this.scene.trigger();
+            }
+        }
+
         var mainTarget      = this.minecraft.getMainRenderTarget();
 
         mainTarget.bindWrite(false);
-        this.scene.render(this.cachedPartialTick * 0.05f);
+        this.scene.render(delta);
 
         VertexBuffer.unbind();
     }
@@ -235,6 +249,9 @@ public final class EndfieldPanoramaRenderer {
         return width > height ? (float) width / height : (float) height / width;
     }
 
+    public void trigger() {
+        this.triggerTimer = 1.0f;
+    }
 
     private record Model(
             PlayerModel<?> wide,

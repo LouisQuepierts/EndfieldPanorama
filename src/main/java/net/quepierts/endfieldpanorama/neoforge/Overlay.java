@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.neoforge;
 
 import lombok.Getter;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
@@ -20,6 +21,9 @@ public final class Overlay extends LoadingOverlay {
     private final EndfieldEarlyWindow window;
     private final ResourceManager manager;
     private RenderScene scene;
+
+    private long fadeOutStart = -1L;
+    private boolean triggered = false;
 
     public Overlay(
             Minecraft minecraft,
@@ -45,6 +49,17 @@ public final class Overlay extends LoadingOverlay {
         }
 
         this.scene.render(partialTick * 0.05f);
+
+        long millis = Util.getMillis();
+        if (this.fadeOutStart == -1L && !this.triggered) {
+            this.fadeOutStart = millis;
+        }
+        float fadeOutTimer = this.fadeOutStart > -1L ? (float) (millis - this.fadeOutStart) / 1000.0F : -1.0F;
+
+        if (!this.triggered && fadeOutTimer > 2.0f) {
+            this.triggered = true;
+            EndfieldPanoramaRenderer.getInstance().trigger();
+        }
     }
 
 
