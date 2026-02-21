@@ -48,6 +48,9 @@ public final class Animation3f {
                             time;
 
         for (int i = 0; i < timelines.length; i++) {
+            if (channelIds[i] == -1) {
+                continue;
+            }
             timelines[i].eval(state, localTime, channelIds[i]);
         }
     }

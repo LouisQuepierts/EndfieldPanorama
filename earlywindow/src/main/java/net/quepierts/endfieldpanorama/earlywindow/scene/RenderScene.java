@@ -56,6 +56,7 @@ public final class RenderScene {
 
     private final CharacterShader   characterShader;
     private final EndfieldShader    backgroundShader;
+    private final TestShader        testShader;
 
     private final PlayerModel       playerModel;
     private final SkeletonUbo       skeletonUbo;
@@ -97,6 +98,7 @@ public final class RenderScene {
 
         this.characterShader        = new CharacterShader(this.shaders);
         this.backgroundShader       = new EndfieldShader(this.shaders);
+        this.testShader             = new TestShader(this.shaders);
 
         this.defaultPlayerTexture   = ImageTexture.fromResource("slim.png", GL31.GL_NEAREST, GL31.GL_REPEAT);
         this.profilePlayerTexture   = this.createProfilePlayerTexture();
@@ -111,7 +113,7 @@ public final class RenderScene {
         );
         this.panorama               = new PanoramaRenderer(this.shaders);
 
-        this.animations             = RawAnimationSet.fromSource("animations/slim.json");
+        this.animations             = RawAnimationSet.fromSource("animations/character.json");
         this.animation              = new SceneAnimation(
                                         this.animations,
                                         this.player,
@@ -125,10 +127,13 @@ public final class RenderScene {
         this.characterShader.bind(this.skeletonUbo);
         this.characterShader.uTexture.set1i(GL31.GL_TEXTURE0);
 
+        this.testShader.bind(this.sceneUbo);
+
         resources.register(this.maskFrameBuffer);
         resources.register(this.backgroundFrameBuffer);
         resources.register(this.characterShader);
         resources.register(this.backgroundShader);
+        resources.register(this.testShader);
         resources.register(this.defaultPlayerTexture);
         resources.register(this.profilePlayerTexture);
         resources.register(this.graphics);
@@ -161,6 +166,9 @@ public final class RenderScene {
             Runnable bindMainBuffer
     ) {
 
+        this.time += delta;
+        this.animation.update(delta);
+
 //        delta *= 0.1f;
 
         if (this.profile.isDone() && !this.syncPlayerTexture) {
@@ -178,9 +186,6 @@ public final class RenderScene {
 
         var texture = this.syncPlayerTexture ? this.profilePlayerTexture : this.defaultPlayerTexture;
         texture.bind(0);
-
-        this.time += delta;
-        this.animation.update(delta);
 
         GL31.glDisable(GL31.GL_CULL_FACE);
         this.updateViewMatrix();
@@ -241,6 +246,10 @@ public final class RenderScene {
     }
 
     public void resize(int width, int height) {
+        if (this.width == width && this.height == height) {
+            return;
+        }
+
         this.width  = width;
         this.height = height;
 

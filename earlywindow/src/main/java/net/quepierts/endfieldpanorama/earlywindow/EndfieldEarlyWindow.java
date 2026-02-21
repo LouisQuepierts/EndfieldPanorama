@@ -136,7 +136,7 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
         });
 
         var mcVersion = parsed.valueOf(mcVersionOpt);
-        var username = parsed.has(usernameOpt) ? parsed.valueOf(usernameOpt) : "Louis_Quepierts";
+        var username = parsed.has(usernameOpt) ? parsed.valueOf(usernameOpt) : "Dev";
 
         this.profile = new MinecraftProfile(username);
 
@@ -405,7 +405,6 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
         if (window == this.window && width != 0 && height != 0) {
             this.winWidth = width;
             this.winHeight = height;
-            this.fbResize(window, width, height);
         }
     }
 
@@ -484,6 +483,7 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
             glfwMakeContextCurrent(window);
 
             this.mainTarget.resize(this.fbWidth, this.fbHeight);
+            this.scene.resize(this.fbWidth, this.fbHeight);
             GL31.glViewport(0, 0, this.fbWidth, this.fbHeight);
 
             this.mainTarget.clear();

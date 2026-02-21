@@ -140,8 +140,12 @@ vec3 renderBackground()
     // ---------------------
     // Grid cell
     // ---------------------
-    vec2 cellId         = floor(hit.xz);
-    vec3 center         = vec3(cellId.x + 0.5, planeY, cellId.y + 0.5);
+    vec2 cellId         = floor(hit.xz * 2.0);
+    vec3 center         = vec3(
+            (cellId.x + 0.5) * 0.5,
+            planeY,
+            (cellId.y + 0.5) * 0.5
+    );
 
 
     // ---------------------
@@ -164,7 +168,7 @@ vec3 renderBackground()
     // ---------------------
     // Shape SDF
     // ---------------------
-    float size          = 0.03;
+    float size          = 0.015;
     float d             = rectSDF(p, vec2(size)); // rect
 
     float mask          = 1.0 - aastep(0.0, d);

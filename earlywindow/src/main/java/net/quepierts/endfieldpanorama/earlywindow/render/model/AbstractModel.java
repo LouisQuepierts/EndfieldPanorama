@@ -6,22 +6,17 @@ import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.Mesh;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderProgram;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Bone;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Box;
+import net.quepierts.endfieldpanorama.earlywindow.skeleton.Float6;
 import net.quepierts.endfieldpanorama.earlywindow.skeleton.Skeleton;
 import net.quepierts.endfieldpanorama.earlywindow.scene.Transform;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class AbstractModel implements Resource {
 
-    public static final int MASK_FRONT  = 1;
-    public static final int MASK_BACK   = 2;
-    public static final int MASK_LEFT   = 4;
-    public static final int MASK_RIGHT  = 8;
-    public static final int MASK_TOP    = 16;
-    public static final int MASK_BOTTOM = 32;
-
-    public static final int MASK_ALL    = 63;
-    public static final int MASK_UPPER  = 31;
-    public static final int MASK_LOWER  = 47;
+    public static final int FLAG_LOWER = 1;
+    public static final int FLAG_UPPER = 2;
 
     @Getter
     private final Skeleton skeleton;
@@ -76,15 +71,7 @@ public abstract class AbstractModel implements Resource {
             for (var box : bone.getBoxes()) {
                 AbstractModel.bone(
                         builder,
-                        box.getX(),
-                        box.getY(),
-                        box.getZ(),
-                        box.getDx(),
-                        box.getDy(),
-                        box.getDz(),
-                        box.getInflate(),
-                        box.getU(),
-                        box.getV(),
+                        box,
                         64,
                         id
                 );
@@ -95,92 +82,116 @@ public abstract class AbstractModel implements Resource {
     }
 
     protected static void bone(
-            Mesh.Builder builder,
-            float px,           float py,           float pz,
-            float dx,           float dy,           float dz,
-            float inflate,
-            float uOffset,      float vOffset,
-            int   textureSize,  int   group
+            Mesh.Builder    builder,
+            Box             box,
+            int             textureSize,
+            int             group
     ) {
 
-        float x0 = px - inflate;
-        float y0 = py - inflate;
-        float z0 = pz - inflate;
-        float x1 = px + dx + inflate;
-        float y1 = py + dy + inflate;
-        float z1 = pz + dz + inflate;
+        var uOffset = box.getU();
+        var vOffset = box.getV();
 
+        var cube    = box.getCube();
+        var inflate = box.getInflate();
+
+        var flag    = box.getFlag();
+        var lower   = flag == FLAG_LOWER;
+
+        var dx      = cube.getX1();
+        var dy      = cube.getY1();
+        var dz      = cube.getZ1();
+
+        var x0      = cube.getX0() - inflate.getX0();
+        var y0      = cube.getY0() - inflate.getY0();
+        var z0      = cube.getZ0() - inflate.getZ0();
+        var x1      = cube.getX0() + inflate.getX1() + dx;
+        var y1      = cube.getY0() + inflate.getY1() + dy;
+        var z1      = cube.getZ0() + inflate.getZ1() + dz;
+
+        var dv = lower ? dz + dy : dz;
         // front
-        quad(
-                builder,
-                x1, y0, z1,
-                x1, y1, z1,
-                x0, y1, z1,
-                x0, y0, z1,
-                uOffset + dz * 2 + dx * 2, vOffset + dz,
-                -dx, dy,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_FRONT)) {
+            quad(
+                    builder,
+                    x1, y0, z1,
+                    x1, y1, z1,
+                    x0, y1, z1,
+                    x0, y0, z1,
+                    uOffset + dz * 2 + dx * 2, vOffset + dv,
+                    -dx, dy,
+                    textureSize, group
+            );
+        }
 
         // back
-        quad(
-                builder,
-                x0, y0, z0,
-                x0, y1, z0,
-                x1, y1, z0,
-                x1, y0, z0,
-                uOffset + dz + dx, vOffset + dz,
-                -dx, dy,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_BACK)) {
+            quad(
+                    builder,
+                    x0, y0, z0,
+                    x0, y1, z0,
+                    x1, y1, z0,
+                    x1, y0, z0,
+                    uOffset + dz + dx, vOffset + dv,
+                    -dx, dy,
+                    textureSize, group
+            );
+        }
 
         // left
-        quad(
-                builder,
-                x1, y0, z0,
-                x1, y1, z0,
-                x1, y1, z1,
-                x1, y0, z1,
-                uOffset + dz, vOffset + dz,
-                -dz, dy,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_LEFT)) {
+            quad(
+                    builder,
+                    x1, y0, z0,
+                    x1, y1, z0,
+                    x1, y1, z1,
+                    x1, y0, z1,
+                    uOffset + dz, vOffset + dv,
+                    -dz, dy,
+                    textureSize, group
+            );
+        }
 
         // right
-        quad(
-                builder,
-                x0, y0, z1,
-                x0, y1, z1,
-                x0, y1, z0,
-                x0, y0, z0,
-                uOffset + dz * 2 + dx, vOffset + dz,
-                -dz, dy,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_RIGHT)) {
+            quad(
+                    builder,
+                    x0, y0, z1,
+                    x0, y1, z1,
+                    x0, y1, z0,
+                    x0, y0, z0,
+                    uOffset + dz * 2 + dx, vOffset + dv,
+                    -dz, dy,
+                    textureSize, group
+            );
+        }
 
         // top
-        quad(
-                builder,
-                x0, y1, z0,
-                x0, y1, z1,
-                x1, y1, z1,
-                x1, y1, z0,
-                uOffset + dz, vOffset,
-                dx, dz,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_TOP)) {
+            quad(
+                    builder,
+                    x0, y1, z0,
+                    x0, y1, z1,
+                    x1, y1, z1,
+                    x1, y1, z0,
+                    uOffset + dz, vOffset,
+                    dx, dz,
+                    textureSize, group
+            );
+        }
 
         // bottom
-        quad(
-                builder,
-                x0, y0, z0,
-                x1, y0, z0,
-                x1, y0, z1,
-                x0, y0, z1,
-                uOffset + dz + dx, vOffset,
-                dx, dz,
-                textureSize, group
-        );
+        if (box.hasMask(Box.MASK_BOTTOM)) {
+            quad(
+                    builder,
+                    x0, y0, z0,
+                    x1, y0, z0,
+                    x1, y0, z1,
+                    x0, y0, z1,
+                    uOffset + dz + dx, vOffset,
+                    dx, dz,
+                    textureSize, group
+            );
+        }
 
     }
 
