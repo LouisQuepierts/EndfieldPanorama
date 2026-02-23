@@ -8,9 +8,6 @@ layout(std140) uniform Scene {
     float uTime;
 };
 
-uniform sampler2D uMaskSampler;
-uniform sampler2D uBackgroundSampler;
-
 in vec2 texCoord;
 out vec4 fragColor;
 
@@ -106,8 +103,7 @@ vec3 renderPattern(vec2 uv) {
     return mix(bgColor, patternColor, m);
 }
 
-vec3 renderBackground()
-{
+vec4 renderBackground() {
 
     // ---------------------
     // Convert texCoord to NDC
@@ -148,6 +144,7 @@ vec3 renderBackground()
     );
 
 
+
     // ---------------------
     // Billboard basis
     // ---------------------
@@ -168,7 +165,7 @@ vec3 renderBackground()
     // ---------------------
     // Shape SDF
     // ---------------------
-    float size          = 0.015;
+    float size          = 0.01;
     float d             = rectSDF(p, vec2(size)); // rect
 
     float mask          = 1.0 - aastep(0.0, d);
@@ -176,42 +173,23 @@ vec3 renderBackground()
     // ---------------------
     // Color with fade by distance
     // ---------------------
-    vec3 bgColor        = vec3(0.943);
     vec3 groundColor    = renderPattern(hit.xz * 0.02);
     vec3 shapeColor     = vec3(0.65);
 
 
     float depthFade     = 1.0 - clamp(t * -0.0625, 0.0, 1.0);
     float bgWeight      = smoothstep(heightMask, 0.0, 0.05);
-    vec3 col            = mix(
-            bgColor,
-            mix(groundColor, shapeColor, mask * heightMask),
-            bgWeight
-    );
+    vec3 col            = mix(groundColor, shapeColor, mask * heightMask);
 
-    return col;
+    return vec4(col, bgWeight);
 }
 
 void main() {
-    const vec3 white    = vec3(0.96);
+    vec4 backgoundColor = renderBackground();
 
-    float baseGlitch1   = triangular_wave(simple_noise(texCoord.y + uTime * 128.0, 532.0)) * 0.5;
-    float baseGlitch2   = square_wave(simple_noise(texCoord.y + uTime * 0.1, 68.0) * 2.0);
-    float noise1        = simple_noise(uTime, 100.0);
+    if (backgoundColor.a < 0.01) {
+        discard;
+    }
 
-    float strength      = step(noise1, 0.3);
-    float glitch        = (baseGlitch1 + baseGlitch2) * strength * 0.002;
-
-    vec2 glitchCoord    = texCoord + vec2(glitch, 0.0);
-
-    float overlay       = max(0.0, sin(texCoord.y * 943.0f * 1.6f));
-    vec3 lineColor      = vec3(0.08);
-
-    float maskColor     = texture(uMaskSampler, glitchCoord).a;
-    float mask          = step(0.1, maskColor);
-    vec3 back           = texture(uBackgroundSampler, texCoord).rgb;
-    vec3 scene          = renderBackground();
-    vec3 finalColor     = mix(scene, back, mask) - lineColor * overlay;
-
-    fragColor           = vec4(finalColor, 1.0);
+    fragColor           = vec4(backgoundColor.rgb, 1.0);
 }

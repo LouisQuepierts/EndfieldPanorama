@@ -1,8 +1,9 @@
-#version 150
+#version 330
 
 uniform mat4 uProjectionViewMatrix;
 
-in  vec3 Position;
+layout(location = 0) in  vec3 Position;
+
 out vec3 texCoord;
 
 void main()

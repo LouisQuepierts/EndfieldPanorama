@@ -1,10 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.shader;
 
 import lombok.experimental.UtilityClass;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @UtilityClass
 public class Shaders {
@@ -24,7 +20,12 @@ public class Shaders {
         public static final String CHARACTER        = "character";
         public static final String FANCY_BACKGROUND = "fancy_background";
 
+        public static final String PATTERN          = "noise_pattern";
+        public static final String BACKGROUND       = "endfield_background";
+        public static final String SCAN_LINE = "scan_line";
+
         public static final String PANORAMA         = "panorama";
+        public static final String SILHOUETTE       = "glitch_silhouette";
 
     }
 

@@ -192,6 +192,10 @@ public final class SceneAnimation {
         }
     }
 
+    public boolean isLooping() {
+        return phrase == Phrase.LOOP;
+    }
+
     private enum Phrase {
         BEGIN,
         TRANSITION,

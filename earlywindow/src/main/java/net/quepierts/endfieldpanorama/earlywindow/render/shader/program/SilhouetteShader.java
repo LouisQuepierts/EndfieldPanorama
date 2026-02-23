@@ -4,17 +4,17 @@ import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 import org.jetbrains.annotations.NotNull;
 
-public final class EndfieldShader extends ShaderProgram {
+public final class SilhouetteShader extends ShaderProgram {
 
     public final AbstractUniform uMaskSampler;
     public final AbstractUniform uBackgroundSampler;
 
-    public EndfieldShader(@NotNull ShaderManager manager) {
+    public SilhouetteShader(@NotNull ShaderManager manager) {
 
         super(
                 manager,
                 Shaders.Vertex.BLIT,
-                Shaders.Fragment.FANCY_BACKGROUND,
+                Shaders.Fragment.SILHOUETTE,
                 DefaultVertexFormats.BLIT_SCREEN,
                 UniformDefinition.builder()
                         .add("uMaskSampler",        UniformType.SAMPLER)
@@ -29,5 +29,4 @@ public final class EndfieldShader extends ShaderProgram {
         uBackgroundSampler.set1i(1);
 
     }
-
 }

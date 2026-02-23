@@ -8,12 +8,9 @@ import net.quepierts.endfieldpanorama.earlywindow.render.ImageTexture;
 import net.quepierts.endfieldpanorama.earlywindow.render.ModelRenderer;
 import net.quepierts.endfieldpanorama.earlywindow.render.PanoramaRenderer;
 import net.quepierts.endfieldpanorama.earlywindow.render.model.PlayerModel;
-import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.FrameBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderManager;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.CharacterShader;
-import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.EndfieldShader;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SceneUbo;
-import net.quepierts.endfieldpanorama.earlywindow.render.shader.program.TestShader;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ubo.SkeletonUbo;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -48,19 +45,19 @@ public final class RenderScene {
     private final SceneUbo          sceneUbo;
     private final ShaderManager     shaders;
 
-    private final FrameBuffer       maskFrameBuffer;
-    private final FrameBuffer       backgroundFrameBuffer;
+//    private final FrameBuffer       maskFrameBuffer;
+//    private final FrameBuffer       backgroundFrameBuffer;
 
     private final ImageTexture      defaultPlayerTexture;
     private final ImageTexture      profilePlayerTexture;
 
     private final CharacterShader   characterShader;
-    private final EndfieldShader    backgroundShader;
-    private final TestShader        testShader;
+//    private final EndfieldShader    backgroundShader;
 
     private final PlayerModel       playerModel;
     private final SkeletonUbo       skeletonUbo;
 
+    private final SceneProcedure    procedure;
     private final ModelRenderer     player;
     private final PanoramaRenderer  panorama;
 
@@ -78,7 +75,7 @@ public final class RenderScene {
             @NotNull MinecraftProfile   profile
     ) {
 
-        this.profile = profile;
+        this.profile                = profile;
 
         // init
         this.matProjection          = new Matrix4f();
@@ -93,12 +90,11 @@ public final class RenderScene {
         this.sceneUbo               = new SceneUbo();
         this.shaders                = new ShaderManager();
 
-        this.maskFrameBuffer        = new FrameBuffer(true);
-        this.backgroundFrameBuffer  = new FrameBuffer(false);
-
+//        this.maskFrameBuffer        = new FrameBuffer(true);
+//        this.backgroundFrameBuffer  = new FrameBuffer(false);
+//
         this.characterShader        = new CharacterShader(this.shaders);
-        this.backgroundShader       = new EndfieldShader(this.shaders);
-        this.testShader             = new TestShader(this.shaders);
+//        this.backgroundShader       = new EndfieldShader(this.shaders);
 
         this.defaultPlayerTexture   = ImageTexture.fromResource("slim.png", GL31.GL_NEAREST, GL31.GL_REPEAT);
         this.profilePlayerTexture   = this.createProfilePlayerTexture();
@@ -107,10 +103,17 @@ public final class RenderScene {
         this.skeletonUbo            = this.playerModel.getSkeleton().createUbo();
         this.jomlArr                = new float[16];
 
-        this.player                 = new ModelRenderer(
-                this.playerModel,
-                this.characterShader
+        this.procedure              = new SceneProcedure(
+                                        this.shaders,
+                                        this.graphics,
+                                        this.sceneUbo
         );
+
+        this.player                 = new ModelRenderer(
+                                        this.playerModel,
+                                        this.characterShader
+        );
+
         this.panorama               = new PanoramaRenderer(this.shaders);
 
         this.animations             = RawAnimationSet.fromSource("animations/character.json");
@@ -121,21 +124,18 @@ public final class RenderScene {
         );
 
         this.sceneUbo.uTime.set1f(this.time);
-        this.backgroundShader.bind(this.sceneUbo);
 
         this.characterShader.bind(this.sceneUbo);
         this.characterShader.bind(this.skeletonUbo);
         this.characterShader.uTexture.set1i(GL31.GL_TEXTURE0);
 
-        this.testShader.bind(this.sceneUbo);
-
-        resources.register(this.maskFrameBuffer);
-        resources.register(this.backgroundFrameBuffer);
+//        resources.register(this.maskFrameBuffer);
+//        resources.register(this.backgroundFrameBuffer);
         resources.register(this.characterShader);
-        resources.register(this.backgroundShader);
-        resources.register(this.testShader);
+//        resources.register(this.backgroundShader);
         resources.register(this.defaultPlayerTexture);
         resources.register(this.profilePlayerTexture);
+        resources.register(this.procedure);
         resources.register(this.graphics);
         resources.register(this.playerModel);
         resources.register(this.player);
@@ -184,6 +184,10 @@ public final class RenderScene {
             this.profilePlayerTexture.setFilter(GL31.GL_NEAREST);
         }
 
+        if (this.animation.isLooping()) {
+            this.procedure.setRenderPattern(true);
+        }
+
         var texture = this.syncPlayerTexture ? this.profilePlayerTexture : this.defaultPlayerTexture;
         texture.bind(0);
 
@@ -195,10 +199,11 @@ public final class RenderScene {
         this.sceneUbo.upload();
         this.sceneUbo.bind();
 
-        this.maskFrameBuffer.clear();
+//        this.maskFrameBuffer.clear();
 
         // prepare background
-        this.backgroundFrameBuffer.bind();
+//        this.backgroundFrameBuffer.bind();
+        this.procedure.bindBackgroundTarget();
         this.panorama.render(
                 this.matProjection,
                 this.time
@@ -218,21 +223,23 @@ public final class RenderScene {
                         .mul(modelTransform)
         );
 
-        this.maskFrameBuffer.bind();
+//        this.maskFrameBuffer.bind();
+        this.procedure.bindMaskTarget();
         GL31.glEnable(GL31.GL_DEPTH_TEST);
         this.player.render();
         GL31.glDisable(GL31.GL_DEPTH_TEST);
         texture.unbind(0);
 
         // post
-        bindMainBuffer.run();
-        this.maskFrameBuffer.bind(0);
-        this.backgroundFrameBuffer.bind(1);
-
-        this.graphics.blit(this.backgroundShader);
-
-        this.maskFrameBuffer.unbind(0);
-        this.backgroundFrameBuffer.unbind(1);
+        this.procedure.render(bindMainBuffer);
+//        bindMainBuffer.run();
+//        this.maskFrameBuffer.bind(0);
+//        this.backgroundFrameBuffer.bind(1);
+//
+//        this.graphics.blit(this.backgroundShader);
+//
+//        this.maskFrameBuffer.unbind(0);
+//        this.backgroundFrameBuffer.unbind(1);
 
         GL31.glEnable(GL31.GL_CULL_FACE);
     }
@@ -253,9 +260,10 @@ public final class RenderScene {
         this.width  = width;
         this.height = height;
 
-        this.backgroundFrameBuffer.resize(width, height);
-        this.maskFrameBuffer.resize(width, height);
+//        this.backgroundFrameBuffer.resize(width, height);
+//        this.maskFrameBuffer.resize(width, height);
 
+        this.procedure.resize(width, height);
         this.updateProjectionMatrix();
     }
 

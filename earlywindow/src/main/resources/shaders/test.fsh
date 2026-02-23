@@ -1,4 +1,4 @@
-#version 150
+#version 330
 
 layout(std140) uniform Scene {
     mat4 uProjectionMatrix;
@@ -97,7 +97,7 @@ vec3 renderPattern(vec2 uv) {
     float noise1 = simple_noise(uv + iTime * 0.01, 32.0) * noise0;
     float m = step(0.97, fract(triangular_wave(noise1) * 2.));
 
-    vec3 bgColor            = vec3(0.95);
+    vec3 bgColor            = vec3(0.943);
     vec3 patternColor       = vec3(0.85);
 
     return mix(bgColor, patternColor, m);
@@ -169,7 +169,7 @@ vec3 renderBackground()
     // ---------------------
     // Color with fade by distance
     // ---------------------
-    vec3 bgColor        = vec3(0.95);
+    vec3 bgColor        = vec3(0.943);
     vec3 groundColor    = renderPattern(hit.xz * 0.02);
     vec3 shapeColor     = vec3(0.65);
 

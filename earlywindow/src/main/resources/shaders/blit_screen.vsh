@@ -1,6 +1,6 @@
-#version 150
+#version 330
 // blit_screen
-in vec3 Position;
+layout(location = 0) in vec3 Position;
 
 out vec2 texCoord;
 

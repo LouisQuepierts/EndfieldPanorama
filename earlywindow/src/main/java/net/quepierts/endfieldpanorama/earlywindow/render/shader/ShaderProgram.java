@@ -116,7 +116,6 @@ public class ShaderProgram implements UniformContained, Resource {
         GL31.glUniformBlockBinding(program, location, buffer.getBindingPoint());
     }
 
-
     @Override
     public @NotNull AbstractUniform getUniform(@NotNull String name) {
         return this.uniforms.getOrDefault(name, AbstractUniform.DUMMY);
