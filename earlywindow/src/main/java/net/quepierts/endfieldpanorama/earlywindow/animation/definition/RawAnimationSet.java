@@ -22,7 +22,7 @@ public final class RawAnimationSet {
     private final String version;
 
     public static RawAnimationSet fromSource(@NotNull String url) {
-        try (var source = EarlyResourceLoader.loadResource(url)) {
+        try (var source = EarlyResourceLoader.loadFileOrCreate(url)) {
             var reader = new JsonReader(new InputStreamReader(source));
             return fromJson(GSON.fromJson(reader, JsonObject.class));
         } catch (Exception e) {

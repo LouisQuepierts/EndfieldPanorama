@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 public class EarlyResourceLoader {
 
+    // in file
+    private static final String ASSETS_PATH = "assets/endfield_panorama/";
+
     public static boolean hasResource(final String path) {
         var is = loadResource(path);
         if (is != null) {
@@ -22,6 +25,43 @@ public class EarlyResourceLoader {
             }
         }
         return false;
+    }
+
+    public static boolean hasFile(final String path) {
+        return toFile(path).exists();
+    }
+
+    public static @Nullable InputStream loadFile(final String path) {
+        try {
+            return new FileInputStream(toFile(path));
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public static @NotNull InputStream loadFileOrCreate(final String path) {
+        var file    = toFile(path);
+
+        if (!file.exists()) {
+            file.getParentFile().mkdirs();
+
+            try (
+                    var in = loadResourceOrThrow(path);
+                    var out = new FileOutputStream(file)
+            ) {
+                var buffer = new byte[1024];
+                int length;
+                while ((length = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, length);
+                }
+            } catch (IOException ignored) { }
+        }
+
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static @Nullable InputStream loadResource(final String path) {
@@ -53,7 +93,11 @@ public class EarlyResourceLoader {
     }
 
     public static byte @NotNull [] loadByteArray(final String path) {
-        try (var is     = loadResource(path);
+        return loadByteArray(path, true);
+    }
+
+    public static byte @NotNull [] loadByteArray(final String path, final boolean file) {
+        try (var is     = loadFileOrCreate(path);
              var out    = new ByteArrayOutputStream()) {
 
             byte[] buffer = new byte[1024];
@@ -67,6 +111,10 @@ public class EarlyResourceLoader {
         } catch (IOException e) {
             return new byte[0];
         }
+    }
+
+    public static File toFile(final String path) {
+        return new File(ASSETS_PATH + path);
     }
 
 

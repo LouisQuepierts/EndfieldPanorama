@@ -6,10 +6,7 @@ import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -50,6 +47,21 @@ public final class MinecraftProfile implements Resource {
 
     private void request() throws MalformedURLException {
         if (this.done) {
+            return;
+        }
+
+        var cache           = localCache(username);
+        if (EarlyResourceLoader.hasFile(cache)) {
+            try (var in = EarlyResourceLoader.loadFile(cache)) {
+                int first = in.read();
+                this.slim = first == 1;
+
+                // read all bytes to skins
+                this.skin = new byte[in.available()];
+                in.read(skin);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             return;
         }
 
@@ -115,6 +127,22 @@ public final class MinecraftProfile implements Resource {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        // write cache
+        if (this.skin == null || this.skin.length == 0) {
+            return;
+        }
+
+        var cache   = localCache(username);
+        var file    = EarlyResourceLoader.toFile(cache);
+        file.getParentFile().mkdirs();
+        try (var out = new FileOutputStream(file)) {
+            int first = this.slim ? 1 : 0;
+            out.write(first);
+            out.write(this.skin);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static JsonObject httpGet(String link) {
@@ -136,6 +164,10 @@ public final class MinecraftProfile implements Resource {
         }
 
         return null;
+    }
+
+    private static String localCache(String username) {
+        return "skins/" + username + ".cache";
     }
 
     @Override

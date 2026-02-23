@@ -119,7 +119,7 @@ public final class Skeleton implements Iterable<Bone> {
     public static Skeleton fromResource(String name) {
         var path = "models/" + name + ".json";
 
-        try (var source = EarlyResourceLoader.loadResourceOrThrow(path)) {
+        try (var source = EarlyResourceLoader.loadFileOrCreate(path)) {
             var reader = new JsonReader(new InputStreamReader(source));
             return fromJson(GSON.fromJson(reader, JsonObject.class));
         } catch (IOException e) {

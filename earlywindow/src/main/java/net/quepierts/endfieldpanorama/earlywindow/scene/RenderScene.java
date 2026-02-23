@@ -173,11 +173,6 @@ public final class RenderScene {
 
         if (this.profile.isDone() && !this.syncPlayerTexture) {
 
-            long currentContext = GLFW.glfwGetCurrentContext();
-            Thread thread = Thread.currentThread();
-            LOGGER.info("Current context: {}", currentContext);
-            LOGGER.info("Current thread: {}", thread);
-
             this.syncPlayerTexture = true;
             var bytes = this.profile.getSkin();
             this.profilePlayerTexture.upload(bytes);
