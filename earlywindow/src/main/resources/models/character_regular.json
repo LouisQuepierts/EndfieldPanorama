@@ -1,0 +1,223 @@
+{
+  "body": {
+    "pivot": [ 0, 12, 0 ],
+    "position": [ -4, 12, -2 ],
+    "boxes": [
+      {
+        "scale": [ 8, 6, 4 ],
+        "uv": [ 16, 16 ],
+        "flag": 1
+      },
+      {
+        "inflate": [ 0.25, 0.0, 0.25, 0.25, 0.25, 0.25 ],
+        "scale": [ 8, 6, 4 ],
+        "uv": [ 16, 32 ],
+        "mask": {
+          "top": false
+        },
+        "flag": 1
+      }
+    ],
+    "children": [ "chest" ]
+  },
+  "chest": {
+    "pivot": [ 0, 18, 2 ],
+    "position": [ -4, 18, -2 ],
+    "boxes": [
+      {
+        "scale": [ 8, 6, 4 ],
+        "uv": [ 16, 16 ],
+        "flag": 2
+      },
+      {
+        "inflate": [ 0.25, 0.25, 0.25, 0.25, 0.0, 0.25 ],
+        "scale": [ 8, 6, 4 ],
+        "uv": [ 16, 32 ],
+        "mask": {
+          "bottom": false
+        },
+        "flag": 2
+      }
+    ],
+    "children": [ "head", "left_arm", "right_arm" ]
+  },
+  "head": {
+    "pivot": [ 0, 24, 0 ],
+    "position": [ -4, 24, -4 ],
+    "boxes": [
+      {
+        "scale": [ 8, 8, 8 ],
+        "uv": [ 0, 0 ]
+      },
+      {
+        "inflate": 0.5,
+        "scale": [ 8, 8, 8 ],
+        "uv": [ 32, 0 ]
+      }
+    ]
+  },
+  "left_arm": {
+    "pivot": [ -6, 22, 0 ],
+    "position": [ -8, 18, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 32, 48 ],
+        "flag": 2
+      },
+      {
+        "inflate": [ 0.25, 0.25, 0.25, 0.25, 0.0, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 48, 48 ],
+        "mask": {
+          "bottom": false
+        },
+        "flag": 2
+      }
+    ],
+    "children": [ "left_hand" ]
+  },
+  "left_hand": {
+    "pivot": [ -6, 18, 1 ],
+    "position": [ -8, 12, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 32, 48 ],
+        "flag": 1
+      },
+      {
+        "inflate": [ 0.25, 0.0, 0.25, 0.25, 0.25, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 48, 48 ],
+        "mask": {
+          "top": false
+        },
+        "flag": 1
+      }
+    ]
+  },
+  "right_arm": {
+    "pivot": [ 6, 22, 0 ],
+    "position": [ 4, 18, -2 ],
+    "boxes": [
+      {
+        "scale": [ 3, 6, 4 ],
+        "uv": [ 40, 16 ],
+        "flag": 2
+      },
+      {
+        "inflate": [ 0.25, 0.25, 0.25, 0.25, 0.0, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 40, 32 ],
+        "mask": {
+          "bottom": false
+        },
+        "flag": 2
+      }
+    ],
+    "children": [ "right_hand" ]
+  },
+  "right_hand": {
+    "pivot": [ 6, 18, 1 ],
+    "position": [ 4, 12, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 40, 16 ],
+        "flag": 1
+      },
+      {
+        "inflate": [ 0.25, 0.0, 0.25, 0.25, 0.25, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 40, 32 ],
+        "mask": {
+          "top": false
+        },
+        "flag": 1
+      }
+    ]
+  },
+  "left_leg": {
+    "pivot": [ -2, 12, 0 ],
+    "position": [ -4, 6, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 16, 48 ],
+        "flag": 2
+      },
+      {
+        "inflate": [ 0.25, 0.25, 0.25, 0.25, 0.0, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 48 ],
+        "mask": {
+          "bottom": false
+        },
+        "flag": 2
+      }
+    ],
+    "children": [ "left_foot" ]
+  },
+  "left_foot": {
+    "pivot": [ -2, 6, -1 ],
+    "position": [ -4, 0, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 16, 48 ],
+        "flag": 1
+      },
+      {
+        "inflate": [ 0.25, 0.0, 0.25, 0.25, 0.25, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 48 ],
+        "mask": {
+          "top": false
+        },
+        "flag": 1
+      }
+    ]
+  },
+  "right_leg": {
+    "pivot": [ 2, 12, 0 ],
+    "position": [ 0, 6, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 16 ],
+        "flag": 2
+      },
+      {
+        "inflate": [ 0.25, 0.25, 0.25, 0.25, 0.0, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 32 ],
+        "mask": {
+          "bottom": false
+        },
+        "flag": 2
+      }
+    ],
+    "children": [ "right_foot" ]
+  },
+  "right_foot": {
+    "pivot": [ 2, 6, -1 ],
+    "position": [ 0, 0, -2 ],
+    "boxes": [
+      {
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 16 ],
+        "flag": 1
+      },
+      {
+        "inflate": [ 0.25, 0.0, 0.25, 0.25, 0.25, 0.25 ],
+        "scale": [ 4, 6, 4 ],
+        "uv": [ 0, 32 ],
+        "mask": {
+          "top": false
+        },
+        "flag": 1
+      }
+    ]
+  }
+}

@@ -123,7 +123,7 @@ void main() {
     float noise2    = simplex3d(vec3(p * 94.3, time * 1.2)) * 0.5 + 0.5;
     vec2 dir        = rad2dir(noise1 * 3.14 * 0.5) * noise2;
 
-    vec2 pos        = p + dir * (0.25 + n * 0.15);
+    vec2 pos        = p + dir * (0.25 + n * 0.15 * (p.x + 0.5));
 
     float snoise    = perlin_noise(vec2(pos.x, time)) * 0.5 + 0.45;
     float cnoise1   = perlin_noise(vec2(pos.y * 1.2 - 0.1, time * 0.2));
@@ -147,6 +147,6 @@ void main() {
 
     float weight    = max(w1r, w2r) * smoothstep(4.2, 1.2, dot(pos, pos));
 
-    vec3 col        = vec3(mix(0.943, 0.90 + snoise * noise1 * 0.15, weight));
+    vec3 col        = vec3(mix(0.943, 0.86 + snoise * noise1 * 0.15, weight));
     fragColor       = vec4(col,1.0);
 }

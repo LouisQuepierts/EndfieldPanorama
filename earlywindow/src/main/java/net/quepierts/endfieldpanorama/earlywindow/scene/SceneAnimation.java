@@ -4,6 +4,7 @@ import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.animation.*;
 import net.quepierts.endfieldpanorama.earlywindow.animation.definition.RawAnimationSet;
 import net.quepierts.endfieldpanorama.earlywindow.render.ModelRenderer;
+import net.quepierts.endfieldpanorama.earlywindow.render.PlayerRenderer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -23,15 +24,18 @@ public final class SceneAnimation {
     private Phrase phrase = Phrase.BEGIN;
 
     @Getter
-    private float currentTime = 0f;
-    private float transitionDuration = 0.2f;
-    private float transitionElapsed = 0f;
+    private float currentTime           = 0f;
+    private float transitionDuration    = 0.2f;
+    private float transitionElapsed     = 0f;
 
-    private boolean signalReceived = false;
+    @Getter
+    private boolean signalReceived      = false;
+    @Getter
+    private boolean showPattern         = false;
 
     public SceneAnimation(
             @NotNull RawAnimationSet    set,
-            @NotNull ModelRenderer      renderer,
+            @NotNull PlayerRenderer     renderer,
             @NotNull Camera             camera
     ) {
         var begin       = set.getOrThrow("begin");
@@ -103,6 +107,8 @@ public final class SceneAnimation {
         this.transitionDuration = other.transitionDuration;
         this.transitionElapsed  = other.transitionElapsed;
         this.phrase             = other.phrase;
+        this.signalReceived     = other.signalReceived;
+        this.showPattern        = other.showPattern;
     }
 
     public void trigger() {
@@ -165,6 +171,7 @@ public final class SceneAnimation {
                             1.0f
                     );
 
+                    this.showPattern = transitionElapsed > 1.25f;
                     if (transitionElapsed >= program.getAnimation(LOCATION_TRANSITION).getDuration()) {
                         phrase      = Phrase.LOOP;
                         currentTime = 0f;
@@ -190,10 +197,6 @@ public final class SceneAnimation {
             root.translate(0f, 0f, zOffset);
             camera.translate(0f, 0f, zOffset);
         }
-    }
-
-    public boolean isLooping() {
-        return phrase == Phrase.LOOP;
     }
 
     private enum Phrase {
