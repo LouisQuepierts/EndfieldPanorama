@@ -1,5 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.shader.program;
 
+import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,6 +14,7 @@ public final class EndfieldShader extends ShaderProgram {
                 manager,
                 Shaders.Vertex.BLIT,
                 Shaders.Fragment.FANCY_BACKGROUND,
+                DefaultVertexFormats.BLIT_SCREEN,
                 UniformDefinition.builder()
                         .add("uMaskSampler",        UniformType.SAMPLER)
                         .add("uBackgroundSampler",  UniformType.SAMPLER)

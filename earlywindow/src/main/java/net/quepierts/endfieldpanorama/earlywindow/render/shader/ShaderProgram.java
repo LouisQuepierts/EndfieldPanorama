@@ -3,6 +3,7 @@ package net.quepierts.endfieldpanorama.earlywindow.render.shader;
 import com.google.common.collect.ImmutableMap;
 import lombok.Getter;
 import net.quepierts.endfieldpanorama.earlywindow.Resource;
+import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexFormat;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 
@@ -12,21 +13,26 @@ public class ShaderProgram implements UniformContained, Resource {
 
     private static ShaderProgram last;
 
-    private final Shader vertex;
-    private final Shader fragment;
+    @Getter
+    private final Shader        vertex;
+    @Getter
+    private final Shader        fragment;
+    @Getter
+    private final VertexFormat  format;
 
     @Getter
-    private final int program;
+    private final int           program;
 
     private final Map<String, AbstractUniform> uniforms;
 
     private boolean free = false;
 
     public ShaderProgram(
-            @NotNull ShaderManager manager,
-            @NotNull String vertex,
-            @NotNull String fragment,
-            @NotNull UniformDefinition definitions
+            @NotNull ShaderManager      manager,
+            @NotNull String             vertex,
+            @NotNull String             fragment,
+            @NotNull VertexFormat       format,
+            @NotNull UniformDefinition  definitions
     ) {
 
         var vsh = manager.getShader(vertex, ShaderType.VERTEX);
@@ -43,10 +49,15 @@ public class ShaderProgram implements UniformContained, Resource {
         this.vertex     = vsh;
         this.fragment   = fsh;
 
+        this.format     = format;
+
         var program     = GL31.glCreateProgram();
 
         GL31.glAttachShader(program, vsh.getId());
         GL31.glAttachShader(program, fsh.getId());
+
+        this.format.bindAttributePosition(this);
+
         GL31.glLinkProgram(program);
 
         if (GL31.glGetProgrami(program, GL31.GL_LINK_STATUS) == GL31.GL_FALSE) {

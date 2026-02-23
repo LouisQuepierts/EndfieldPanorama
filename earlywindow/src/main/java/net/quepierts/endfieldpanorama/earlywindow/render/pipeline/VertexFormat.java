@@ -3,6 +3,8 @@ package net.quepierts.endfieldpanorama.earlywindow.render.pipeline;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderProgram;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
 
 import java.util.ArrayList;
@@ -11,9 +13,10 @@ import java.util.List;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VertexFormat {
 
-    private final int[] size;
-    private final int[] offset;
-    private final int[] type;
+    private final String[]  name;
+    private final int[]     size;
+    private final int[]     offset;
+    private final int[]     type;
 
     @Getter
     private final int vertexSize;
@@ -29,6 +32,13 @@ public final class VertexFormat {
                 GL31.glVertexAttribIPointer(i, size[i], glType, stride, offset[i]);
             }
             GL31.glEnableVertexAttribArray(i);
+        }
+    }
+
+    public void bindAttributePosition(@NotNull ShaderProgram program) {
+        var pid     = program.getProgram();
+        for (int i = 0; i < this.type.length; i++) {
+            GL31.glBindAttribLocation(pid, i, name[i]);
         }
     }
 
@@ -51,20 +61,26 @@ public final class VertexFormat {
     public static class Builder {
         private final List<VertexElement> elements = new ArrayList<>();
 
-        public Builder addElement(int length, ElementType type) {
-            elements.add(new VertexElement(length, type));
+        public Builder addElement(
+                String      name,
+                ElementType type,
+                int         length
+        ) {
+            elements.add(new VertexElement(name, length, type));
             return this;
         }
 
         public VertexFormat build() {
-            int[] size = new int[elements.size()];
-            int[] type = new int[elements.size()];
-            int[] offset = new int[elements.size()];
-            int vertexSize = 0;
-            int vertexStride = 0;
+            String[]    name    = new String[elements.size()];
+            int[]       size    = new int[elements.size()];
+            int[]       type    = new int[elements.size()];
+            int[]       offset  = new int[elements.size()];
+            int vertexSize      = 0;
+            int vertexStride    = 0;
 
             for (int i = 0; i < elements.size(); i++) {
                 VertexElement element = elements.get(i);
+                name[i] = element.name;
                 size[i] = element.length;
                 type[i] = element.type.glType;
                 offset[i] = vertexStride;
@@ -72,14 +88,15 @@ public final class VertexFormat {
                 vertexStride += element.length * element.type.size;
             }
 
-            return new VertexFormat(size, offset, type, vertexSize, vertexStride);
+            return new VertexFormat(name, size, offset, type, vertexSize, vertexStride);
         }
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     public static class VertexElement {
-        final int length;
-        final ElementType type;
+        final String        name;
+        final int           length;
+        final ElementType   type;
     }
 
     @FunctionalInterface

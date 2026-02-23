@@ -1,5 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.shader.program;
 
+import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,7 @@ public final class PanoramaShader extends ShaderProgram {
                 manager,
                 Shaders.Vertex.PANORAMA,
                 Shaders.Fragment.PANORAMA,
+                DefaultVertexFormats.PANORAMA,
                 UniformDefinition.builder()
                         .add("uTexture",                UniformType.SAMPLER)
                         .add("uProjectionViewMatrix",   UniformType.MAT4)

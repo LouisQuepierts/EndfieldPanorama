@@ -7,6 +7,7 @@ plugins {
 
 version = mod_version
 group = mod_group_id
+def useJarJar = false
 
 repositories {
     mavenLocal()
@@ -103,7 +104,11 @@ dependencies {
     compileOnly group: 'org.projectlombok', name: 'lombok', version: lombok_version
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
 
-    implementation project(":earlywindow")
+    if (useJarJar) {
+        jarJar(implementation project(":earlywindow"))
+    } else {
+        implementation project(":earlywindow")
+    }
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

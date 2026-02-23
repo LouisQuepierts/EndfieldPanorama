@@ -16,20 +16,20 @@ public class DefaultVertexFormats {
 
     static {
         BLIT_SCREEN = new VertexFormat.Builder()
-                .addElement(3, ElementType.FLOAT)   // Position
+                .addElement("Position", ElementType.FLOAT, 3)   // Position
                 .build();
 
         PANORAMA = BLIT_SCREEN;
 
         POSITION_TEXTURE = new VertexFormat.Builder()
-                .addElement(3, ElementType.FLOAT)   // Position
-                .addElement(2, ElementType.FLOAT)   // UV
+                .addElement("Position", ElementType.FLOAT, 3)   // Position
+                .addElement("UV", ElementType.FLOAT, 2)         // UV
                 .build();
 
         CHARACTER = new VertexFormat.Builder()
-                .addElement(3, ElementType.FLOAT)   // Position
-                .addElement(2, ElementType.FLOAT)   // UV
-                .addElement(1, ElementType.INT)     // Group
+                .addElement("Position", ElementType.FLOAT, 3)   // Position
+                .addElement("UV", ElementType.FLOAT, 2)         // UV
+                .addElement("Group", ElementType.INT, 1)     // Group
                 .build();
     }
 

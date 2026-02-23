@@ -1,5 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.shader.program;
 
+import net.quepierts.endfieldpanorama.earlywindow.render.DefaultVertexFormats;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,6 +15,7 @@ public final class CharacterShader extends ShaderProgram {
                 manager,
                 Shaders.Vertex.CHARACTER,
                 Shaders.Fragment.CHARACTER,
+                DefaultVertexFormats.CHARACTER,
                 UniformDefinition.builder()
                         .add("uModelMatrix",    UniformType.MAT4)
                         .add("uTexture",        UniformType.SAMPLER)
