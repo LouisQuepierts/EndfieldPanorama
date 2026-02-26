@@ -9,44 +9,49 @@ import net.quepierts.endfieldpanorama.earlywindow.scene.Transform;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
-public final class PlayerRenderer implements Resource {
+public final class PlayerRenderer extends ModelRenderer implements Resource {
 
-    @Getter
-    private final Transform         transform   = new Transform();
     private final Matrix4f          matrix      = new Matrix4f();
 
     @Getter
-    private @NotNull PlayerModel    model;
     private @NotNull ImageTexture   skin;
 
     private @NotNull SkeletonUbo    ubo;
 
     private boolean slim;
 
-    public PlayerRenderer(@NotNull ImageTexture skin, boolean slim) {
+    public PlayerRenderer(
+            @NotNull ImageTexture skin,
+            @NotNull CharacterShader shader,
+            boolean slim
+    ) {
+        super(PlayerModel.create(slim), shader);
         this.skin   = skin;
-        this.model  = PlayerModel.create(slim);
-        this.ubo    = this.model.getSkeleton().createUbo();
+        this.ubo    = this.getModel().getSkeleton().createUbo();
 
         this.slim = slim;
     }
 
-    public void render(@NotNull CharacterShader shader) {
+    @Override
+    public void render() {
 
-        this.transform.getMatrix(matrix);
-        shader.uModelMatrix.setMatrix4f(
-                new Matrix4f()
-                        .scale(0.0625f)
-                        .mul(matrix)
+        this.getTransform().getMatrix(matrix);
+
+        var shader  = (CharacterShader) this.getShader();
+        var model   = this.getModel();
+        shader      .uModelMatrix.setMatrix4f(
+                    new Matrix4f()
+                            .scale(0.0625f)
+                            .mul(matrix)
         );
-        shader.bind(this.ubo);
+        shader      .bind(this.ubo);
 
-        this.model.getSkeleton().apply(this.ubo);
+        model.getSkeleton().apply(this.ubo);
         this.ubo.upload();
         this.ubo.bind();
 
         this.skin.bind(0);
-        this.model.draw(shader);
+        model.draw(shader);
         this.skin.unbind(0);
 
         this.ubo.unbind();
@@ -60,11 +65,12 @@ public final class PlayerRenderer implements Resource {
         }
 
         if (this.slim != slim) {
-            this.model.free();
+            var model   = this.getModel();
+            model.free();
             this.ubo.free();
 
-            this.model = PlayerModel.create(slim);
-            this.ubo = this.model.getSkeleton().createUbo();
+            model = PlayerModel.create(slim);
+            this.ubo = model.getSkeleton().createUbo();
 
             this.slim = slim;
         }
@@ -74,6 +80,5 @@ public final class PlayerRenderer implements Resource {
     @Override
     public void free() {
         this.ubo.free();
-        this.model.free();
     }
 }
