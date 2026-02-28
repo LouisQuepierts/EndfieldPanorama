@@ -149,51 +149,68 @@ public final class Mesh implements Resource {
             return this;
         }
 
-        private void vertex(float v) {
+        private Builder vertex(float v) {
             var ptr = this.vbo.pointer;
             MemoryUtil.memPutFloat(ptr, v);
             this.vbo.pointer += Float.BYTES;
+            return this;
         }
         
-        public void floatValue(float v) {
+        public Builder floatValue(float v) {
             var ptr = this.vbo.pointer;
             MemoryUtil.memPutFloat(ptr, v);
             this.vbo.pointer += Float.BYTES;
+            return this;
         }
         
-        public void intValue(int v) {
+        public Builder intValue(int v) {
             var ptr = this.vbo.pointer;
             MemoryUtil.memPutInt(ptr, v);
             this.vbo.pointer += Integer.BYTES;
+            return this;
         }
 
-        public void floats(float... v) {
+        public Builder floats(float... v) {
             var ptr = this.vbo.pointer;
             for (float value : v) {
                 MemoryUtil.memPutFloat(ptr, value);
                 ptr += Float.BYTES;
             }
             this.vbo.pointer = ptr;
+            return this;
         }
 
-        public void ints(int... v) {
+        public Builder ints(int... v) {
             var ptr = this.vbo.pointer;
             for (int value : v) {
                 MemoryUtil.memPutInt(ptr, value);
                 ptr += Integer.BYTES;
             }
             this.vbo.pointer = ptr;
+            return this;
         }
 
-        public void countVertex() {
+        public Builder countVertex() {
             this.vertexCount++;
+            return this;
         }
 
-        public void index(int v) {
+        public Builder index(int v) {
             var ptr = this.ebo.pointer;
             MemoryUtil.memPutInt(ptr, v);
             this.ebo.pointer += Integer.BYTES;
             this.indexCount++;
+            return this;
+        }
+
+        public Builder fastQuad(int idx) {
+            this.index(idx);
+            this.index(idx + 1);
+            this.index(idx + 2);
+            this.index(idx + 2);
+            this.index(idx + 3);
+            this.index(idx);
+            return this;
         }
 
         public Mesh build() {
