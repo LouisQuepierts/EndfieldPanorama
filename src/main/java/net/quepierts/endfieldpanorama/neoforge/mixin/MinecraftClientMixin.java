@@ -18,15 +18,15 @@ public class MinecraftClientMixin {
         if (!EndfieldPanoramaRenderer.setuped()) {
             return;
         }
-
-        var renderer        = EndfieldPanoramaRenderer.getInstance();
-        var window          = Minecraft.getInstance().getWindow();
-        renderer.resize(window.getWidth(), window.getHeight());
+        EndfieldPanoramaRenderer.resize();
     }
 
     @Inject(
-            method = "destroy",
-            at = @At("HEAD")
+            method = "close",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/renderer/GameRenderer;close()V"
+            )
     )
     public void endfieldpanorama$destroy(CallbackInfo ci) {
         EndfieldPanoramaRenderer.getInstance().destroy();

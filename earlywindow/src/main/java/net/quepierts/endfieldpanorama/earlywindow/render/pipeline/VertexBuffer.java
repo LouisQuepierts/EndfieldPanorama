@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.pipeline;
 
 import lombok.Getter;
+import lombok.Setter;
 import net.quepierts.endfieldpanorama.earlywindow.Resource;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.opengl.GL31;
@@ -16,7 +17,9 @@ public final class VertexBuffer implements Resource {
     @Getter
     private Mesh last;
 
-    private boolean free = false;
+    @Setter
+    private boolean freeMesh    = true;
+    private boolean free        = false;
 
     public VertexBuffer() {
         this.vertex = GL31.glGenBuffers();
@@ -64,10 +67,7 @@ public final class VertexBuffer implements Resource {
     @Override
     public void unbind() {
         if (BOUND_BUFFER == this.array) {
-            GL31.glBindVertexArray(0);
-            GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, 0);
-            GL31.glBindBuffer(GL31.GL_ELEMENT_ARRAY_BUFFER, 0);
-            BOUND_BUFFER = 0;
+            unbind0();
         }
     }
 
@@ -81,6 +81,17 @@ public final class VertexBuffer implements Resource {
         GL31.glDeleteBuffers(this.vertex);
         GL31.glDeleteBuffers(this.element);
         GL31.glDeleteVertexArrays(this.array);
+
+        if (this.freeMesh && this.last != null) {
+            this.last.free();
+        }
+    }
+
+    public static void unbind0() {
+        GL31.glBindVertexArray(0);
+        GL31.glBindBuffer(GL31.GL_ARRAY_BUFFER, 0);
+        GL31.glBindBuffer(GL31.GL_ELEMENT_ARRAY_BUFFER, 0);
+        BOUND_BUFFER = 0;
     }
 
 }

@@ -1,7 +1,5 @@
 package net.quepierts.endfieldpanorama.earlywindow.scene.passes;
 
-import lombok.Setter;
-import net.quepierts.endfieldpanorama.earlywindow.render.Graphics;
 import net.quepierts.endfieldpanorama.earlywindow.render.procedure.RenderContext;
 import net.quepierts.endfieldpanorama.earlywindow.render.procedure.RenderPass;
 import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderManager;
@@ -21,11 +19,8 @@ public final class CombinePass implements RenderPass {
 
     private final SilhouetteShader  silhouette;
 
-    private final Graphics          graphics;
-
     public CombinePass(
             @NotNull ShaderManager manager,
-            @NotNull Graphics graphics,
             @NotNull SceneUbo sceneUbo
     ) {
 
@@ -33,8 +28,6 @@ public final class CombinePass implements RenderPass {
         this.background         = new BlitShader(manager, Shaders.Fragment.BACKGROUND);
         this.scanLines          = new BlitShader(manager, Shaders.Fragment.SCAN_LINE);
         this.silhouette         = new SilhouetteShader(manager);
-
-        this.graphics           = graphics;
 
         this.pattern        .bind(sceneUbo);
         this.background     .bind(sceneUbo);
@@ -45,28 +38,30 @@ public final class CombinePass implements RenderPass {
 
     @Override
     public void render(RenderContext context, float delta, float time) {
+        
+        var graphics    = context.getGraphics();
 
-        context.clearFrameBuffer("scene");
-        context.bindFrameBuffer("scene");
+        context         .clearFrameBuffer("scene");
+        context         .bindFrameBuffer("scene");
 
-        if (context.hasSignal(SIGNAL_CHLADNI)) {
-            this.graphics.blit(this.pattern);
+        if (context     .hasSignal(SIGNAL_CHLADNI)) {
+            graphics    .blit(this.pattern);
         }
 
-        this.graphics.blit(this.background);
+        graphics        .blit(this.background);
 
-        context.bindTexture("buffer.mask", 0);
-        context.bindTexture("buffer.background", 1);
-        this.graphics.blit(this.silhouette);
-        context.unbindTexture("buffer.mask", 0);
-        context.unbindTexture("buffer.background", 1);
+        context         .bindTexture("buffer.mask", 0);
+        context         .bindTexture("buffer.background", 1);
+        graphics        .blit(this.silhouette);
+        context         .unbindTexture("buffer.mask", 0);
+        context         .unbindTexture("buffer.background", 1);
 
-        context.clearFrameBuffer("mask");
+        context         .clearFrameBuffer("mask");
 
-        context.bindFrameBuffer("main");
-        context.bindTexture("buffer.scene", 0);
-        this.graphics.blit(this.scanLines);
-        context.unbindTexture("buffer.scene", 0);
+        context         .bindFrameBuffer("main");
+        context         .bindTexture("buffer.scene", 0);
+        graphics        .blit(this.scanLines);
+        context         .unbindTexture("buffer.scene", 0);
 
     }
 

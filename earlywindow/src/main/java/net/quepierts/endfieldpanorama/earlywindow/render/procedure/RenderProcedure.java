@@ -1,6 +1,7 @@
 package net.quepierts.endfieldpanorama.earlywindow.render.procedure;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
 import net.quepierts.endfieldpanorama.earlywindow.render.BaseTexture;
@@ -24,6 +25,7 @@ public final class RenderProcedure implements RenderContext {
     private final BaseTexture[]             textures;
     private final RenderPass[]              passes;
 
+    @Getter
     private final Graphics                  graphics;
 
     private @NotNull Runnable               bindMainTarget  = () -> {};
@@ -74,6 +76,12 @@ public final class RenderProcedure implements RenderContext {
     public void clearFrameBuffer(String name) {
         var buffer = this.name2buffer.get(name);
         buffer.clear();
+    }
+
+    @Override
+    public void blitFrameBuffer(String name, int width, int height) {
+        var buffer = this.name2buffer.get(name);
+        buffer.draw(width, height);
     }
 
     @Override

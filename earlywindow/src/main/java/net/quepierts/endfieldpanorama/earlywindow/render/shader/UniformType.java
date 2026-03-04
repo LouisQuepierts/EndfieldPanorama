@@ -11,6 +11,7 @@ public enum UniformType {
     VEC4(4, 16, 16, GL31.GL_FLOAT),
     MAT4(16, 64, 64, GL31.GL_FLOAT),
     SAMPLER(1, 4, 4, GL31.GL_INT),
+    INT(1, 4, 4, GL31.GL_INT),
     DUMMY(0, 0, 0, -1);
 
     public final int length;

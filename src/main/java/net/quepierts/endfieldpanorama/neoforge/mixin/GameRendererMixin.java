@@ -23,7 +23,7 @@ public class GameRendererMixin {
             ResourceProvider resourceProvider,
             CallbackInfo ci
     ) {
-        EndfieldPanoramaRenderer.setup();
+//        EndfieldPanoramaRenderer.setup();
     }
 
 }

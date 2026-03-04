@@ -151,7 +151,7 @@ public class ShaderProgram implements UniformContained, Resource {
                 case MAT4:
                     GL31.glUniformMatrix4fv(location, false, floats);
                     break;
-                case SAMPLER:
+                case SAMPLER: case INT:
                     GL31.glUniform1i(location, ints[0]);
                     break;
             }

@@ -11,24 +11,23 @@ public final class EndfieldPanoramaRenderer {
 
     private static EndfieldPanoramaRenderer instance;
 
-    private final RenderTarget  mainTarget;
+    private final RenderTarget      mainTarget;
+
+    private final RenderScene       scene;
+    private final ResourceManager   manager;
 
     private float cachedPartialTick;
 
-    private RenderScene scene;
-    private ResourceManager manager;
-
-    private boolean triggered;
-    private float triggerTimer;
-
-    private EndfieldPanoramaRenderer() {
-        Minecraft minecraft = Minecraft.getInstance();
+    private EndfieldPanoramaRenderer(
+            @NotNull RenderScene        scene,
+            @NotNull ResourceManager    manager
+    ) {
+        var minecraft           = Minecraft.getInstance();
         this.mainTarget         = minecraft.getMainRenderTarget();
-    }
+        this.scene              = scene;
+        this.manager            = manager;
 
-    public void setup(RenderScene scene, ResourceManager manager) {
-        this.scene = scene;
-        this.manager = manager;
+        scene                   .trigger();
     }
 
     public void update(float partialTick) {
@@ -37,14 +36,6 @@ public final class EndfieldPanoramaRenderer {
 
     public void renderScene() {
         var delta = this.cachedPartialTick;
-        if (!triggered && this.triggerTimer > 0.0f) {
-            this.triggerTimer -= delta;
-
-            if (this.triggerTimer <= 0.0f) {
-                this.triggered = true;
-                this.scene.trigger();
-            }
-        }
 
         this.mainTarget.bindWrite(false);
         this.scene.render(delta, () -> this.mainTarget.bindWrite(false));
@@ -62,12 +53,25 @@ public final class EndfieldPanoramaRenderer {
         this.manager.free();
     }
 
-    public static void setup() {
+    public static void setup(RenderScene scene, ResourceManager manager) {
         if (instance != null) {
             return;
         }
 
-        instance = new EndfieldPanoramaRenderer();
+        instance = new EndfieldPanoramaRenderer(scene, manager);
+    }
+
+    public static void resize() {
+        if (instance == null) {
+            return;
+        }
+
+        var minecraft   = Minecraft.getInstance();
+        var window      = minecraft.getWindow();
+        var width       = window.getWidth();
+        var height      = window.getHeight();
+
+        instance.resize(width, height);
     }
 
     @NotNull
@@ -77,10 +81,6 @@ public final class EndfieldPanoramaRenderer {
 
     public static boolean setuped() {
         return instance != null;
-    }
-
-    public void trigger() {
-        this.triggerTimer = 1.0f;
     }
 
 }

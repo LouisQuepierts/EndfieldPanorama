@@ -12,6 +12,7 @@ public class DefaultVertexFormats {
     public static final VertexFormat POSITION_TEXTURE;
 
     public static final VertexFormat CHARACTER;
+    public static final VertexFormat SCREEN_ELEMENT;
 
 
     static {
@@ -30,6 +31,12 @@ public class DefaultVertexFormats {
                 .addElement("Position", ElementType.FLOAT, 3)   // Position
                 .addElement("UV", ElementType.FLOAT, 2)         // UV
                 .addElement("Group", ElementType.INT, 1)     // Group
+                .build();
+
+        SCREEN_ELEMENT = new VertexFormat.Builder()
+                .addElement("Position", ElementType.FLOAT, 2)
+                .addElement("UV", ElementType.FLOAT, 2)
+                .addElement("Color", ElementType.UNSIGNED_BYTE, 4)
                 .build();
     }
 

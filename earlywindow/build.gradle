@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.quepierts.endfieldpanorama.earlywindow'
-version = 2.2
+version = "2.2.1"
 
 repositories {
     gradlePluginPortal()
@@ -65,4 +65,8 @@ tasks.named("jar", Jar).configure {
                 'Built-On-Minecraft'      : minecraft_version
         )
     }
+}
+
+jar {
+    archiveBaseName = rootProject.mod_id + "-earlywindow"
 }

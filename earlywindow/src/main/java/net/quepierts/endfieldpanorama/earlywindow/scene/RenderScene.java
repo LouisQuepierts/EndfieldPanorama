@@ -8,6 +8,8 @@ import net.quepierts.endfieldpanorama.earlywindow.render.shader.ShaderManager;
 import net.quepierts.endfieldpanorama.earlywindow.scene.passes.BackgroundPass;
 import net.quepierts.endfieldpanorama.earlywindow.scene.passes.CombinePass;
 import net.quepierts.endfieldpanorama.earlywindow.scene.passes.MaskPass;
+import net.quepierts.endfieldpanorama.earlywindow.ui.EndfieldLoadingControl;
+import net.quepierts.endfieldpanorama.earlywindow.ui.OverlayPass;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL31;
@@ -28,6 +30,8 @@ public final class RenderScene {
 
     private final MaskPass          scenePass;
 
+    private final Graphics          graphics;
+
     private float                   time;
     private int                     width;
     private int                     height;
@@ -41,21 +45,25 @@ public final class RenderScene {
         this.shaders                = new ShaderManager();
         this.scenePass              = new MaskPass(profile, shaders);
 
-        var graphics                = new Graphics();
+        var font                    = Font.minecraft();
+        var graphics                = new Graphics(font, shaders, 1920, 1080);
         var backgroundPass          = new BackgroundPass(shaders);
 
         var scene                   = this.scenePass.getScene();
         var combinePass             = new CombinePass(
                                         shaders,
-                                        graphics,
                                         scene.getSceneUbo()
         );
+
+        var overlayPass             = createOverlayPass(graphics);
 
         var procedureBuilder        = createProcedureBuilder()
                                     .registerPass(() -> backgroundPass)
                                     .registerPass(() -> this.scenePass)
-                                    .registerPass(() -> combinePass);
+                                    .registerPass(() -> combinePass)
+                                    .registerPass(() -> overlayPass);
 
+        this.graphics               = graphics;
         this.procedure              = procedureBuilder.build(resources, graphics);
 
         resources.register(graphics);
@@ -111,7 +119,20 @@ public final class RenderScene {
 //        this.backgroundFrameBuffer.resize(width, height);
 //        this.maskFrameBuffer.resize(width, height);
 
+        this.graphics.resize(width, height);
         this.procedure.resize(width, height);
+    }
+
+    private static OverlayPass createOverlayPass(@NotNull Graphics graphics) {
+        var font    = graphics.getFont();
+        var pass    = new OverlayPass();
+        pass    .add(EndfieldLoadingControl::new)
+                /*.add(() -> new TextElement(font, "// Compiling Shaders...")
+                        .vertical(UiElement.Layout.MAX)
+                        .horizontal(UiElement.Layout.CENTER)
+                        .position(0, -24))*/;
+
+        return pass;
     }
 
     private static RenderProcedure.Builder createProcedureBuilder() {
@@ -119,6 +140,7 @@ public final class RenderScene {
         return new RenderProcedure.Builder()
                 .registerBuffer("background", false)
                 .registerBuffer("mask", false)
+                .registerBuffer("overlay", false)
                 .registerBuffer("scene", true, 0.943f, 0.943f, 0.943f, 1.0f);
     }
 

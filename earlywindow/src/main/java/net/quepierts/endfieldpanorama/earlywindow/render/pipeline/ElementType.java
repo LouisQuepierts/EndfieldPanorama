@@ -7,7 +7,8 @@ import org.lwjgl.opengl.GL31;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public enum ElementType {
     FLOAT(4, GL31.GL_FLOAT),
-    INT(4, GL31.GL_INT);
+    INT(4, GL31.GL_INT),
+    UNSIGNED_BYTE(1, GL31.GL_UNSIGNED_BYTE);
 
     final int size;
     final int glType;

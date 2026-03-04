@@ -12,20 +12,26 @@ public class Shaders {
         public static final String CHARACTER        = "character";
 
         public static final String PANORAMA         = "panorama";
+        public static final String SCREEN           = "screen_element";
     }
 
     @UtilityClass
     public static class Fragment {
+
+        public static final String BLIT             = "blit_screen";
 
         public static final String CHARACTER        = "character";
         public static final String FANCY_BACKGROUND = "fancy_background";
 
         public static final String PATTERN          = "noise_pattern";
         public static final String BACKGROUND       = "endfield_background";
-        public static final String SCAN_LINE = "scan_line";
+        public static final String SCAN_LINE        = "scan_line";
 
         public static final String PANORAMA         = "panorama";
         public static final String SILHOUETTE       = "glitch_silhouette";
+
+        public static final String SCREEN           = "screen_element";
+        public static final String TEXT             = "text";
 
     }
 
