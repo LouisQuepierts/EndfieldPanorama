@@ -1,6 +1,6 @@
 package net.quepierts.endfieldpanorama.earlywindow.ui;
 
-import net.quepierts.endfieldpanorama.earlywindow.LoadingProgressServiceProvider;
+import net.quepierts.endfieldpanorama.earlywindow.service.LoadingProgressService;
 import net.quepierts.endfieldpanorama.earlywindow.render.Graphics;
 import org.jetbrains.annotations.NotNull;
 
@@ -40,7 +40,7 @@ public final class EndfieldLoadingControl extends UiElement {
             dirty       = true;
         }
 
-        var progress    = LoadingProgressServiceProvider.getCurrentProgress();
+        var progress    = LoadingProgressService.getCurrentProgress();
         if (!progress.isEmpty()) {
             this.show();
 

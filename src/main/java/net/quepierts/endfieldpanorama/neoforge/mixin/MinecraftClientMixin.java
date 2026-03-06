@@ -15,9 +15,6 @@ public class MinecraftClientMixin {
             at = @At("RETURN")
     )
     public void endfieldpanorama$resizeDisplay(CallbackInfo ci) {
-        if (!EndfieldPanoramaRenderer.setuped()) {
-            return;
-        }
         EndfieldPanoramaRenderer.resize();
     }
 

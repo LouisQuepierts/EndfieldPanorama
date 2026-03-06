@@ -10,18 +10,18 @@ import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.server.packs.resources.ReloadInstance;
 import net.minecraft.util.Mth;
 import net.quepierts.endfieldpanorama.earlywindow.EndfieldEarlyWindow;
-import net.quepierts.endfieldpanorama.earlywindow.LoadingProgressServiceProvider;
+import net.quepierts.endfieldpanorama.earlywindow.service.LoadingProgressService;
 import net.quepierts.endfieldpanorama.earlywindow.ResourceManager;
 import net.quepierts.endfieldpanorama.earlywindow.render.pipeline.VertexBuffer;
 import net.quepierts.endfieldpanorama.earlywindow.scene.RenderScene;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public final class Overlay extends LoadingOverlay implements LoadingProgressServiceProvider.ProgressService {
+public final class Overlay extends LoadingOverlay implements LoadingProgressService {
 
     private static final String[]   MESSAGES = {
             "// Loading Resources...",
@@ -56,7 +56,7 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
         this.window         = window;
         this.manager        = new ResourceManager();
 
-        LoadingProgressServiceProvider.setProvider(this);
+        LoadingProgressService.setProvider(this);
     }
 
     @Override
@@ -64,10 +64,10 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
 //        super.render(guiGraphics, mouseX, mouseY, partialTick);
 
         if (this.scene == null) {
-            var scene = window.getScene().duplicate(manager);
-            window.close();
-            this.window = null;
-            this.scene = scene;
+            var scene       = window.getScene().duplicate(manager);
+            window          .close();
+            this.window     = null;
+            this.scene      = scene;
         }
 
         GlStateManager._clear(GlConst.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
@@ -75,21 +75,22 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
         VertexBuffer.unbind0();
         com.mojang.blaze3d.vertex.VertexBuffer.unbind();
 
-        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
-        this.scene.render(partialTick * 0.05f, () -> target.bindWrite(false));
-
-        long millis = Util.getMillis();
-        float fadeOutTimer = this.fadeOutStart > -1L ? (float) (millis - this.fadeOutStart) / 1000.0F : -1.0F;
+        long millis         = Util.getMillis();
+        float fadeOutTimer  = this.fadeOutStart > -1L ? (float) (millis - this.fadeOutStart) / 1000.0F : -1.0F;
 
         float progress      = this.reload.getActualProgress();
         this.progress       = Mth.clamp(this.progress * 0.943f + progress * 0.057f, 0.0f, 1.0f);
 
         if (fadeOutTimer > 2.0f) {
             this.triggered  = true;
-            EndfieldPanoramaRenderer.getInstance().setup(this.scene, this.manager);
+            EndfieldPanoramaRenderer.setup(this.scene, this.manager);
 
             this.minecraft.setOverlay(null);
+            return;
         }
+
+        RenderTarget target = Minecraft.getInstance().getMainRenderTarget();
+        this.scene          .render(partialTick * 0.05f, () -> target.bindWrite(false));
 
         if (this.fadeOutStart == -1L && this.reload.isDone()) {
             this.fadeOutStart = Util.getMillis();
@@ -107,7 +108,8 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
     }
 
     @Override
-    public void provide(@NotNull List<LoadingProgressServiceProvider.ProgressBar> inout) {
+    public void provide(LoadingProgressService.Context context) {
+        var inout       = context.getProgress();
         var first       = inout.getFirst();
 
         if (first.getDelegate() != this) {
@@ -124,8 +126,8 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
         var idx         = Math.min((int) (this.progress * 2), 1);
         var message     = MESSAGES[idx];
 
-        first       .setProgress(this.progress);
-        first       .setMessage(message);
+        first           .setProgress(this.progress);
+        first           .setMessage(message);
     }
 
     @Override
