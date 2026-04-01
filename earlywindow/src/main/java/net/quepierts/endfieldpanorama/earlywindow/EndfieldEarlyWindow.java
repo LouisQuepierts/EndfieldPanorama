@@ -66,6 +66,8 @@ import static org.lwjgl.opengl.GL11C.*;
 
 public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
+    public static final String PROVIDER_NAME = "endfield_early_window";
+
     private static final int[][] GL_VERSIONS = new int[][] { { 4, 6 }, { 4, 5 }, { 4, 4 }, { 4, 3 }, { 4, 2 }, { 4, 1 }, { 4, 0 }, { 3, 3 }, { 3, 2 } };
 
     private static final Logger LOGGER = LoggerFactory.getLogger("EARLYDISPLAY");
@@ -100,7 +102,7 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
     @Override
     public String name() {
-        return "fmlearlywindow";
+        return PROVIDER_NAME;
     }
 
     @Override
@@ -249,7 +251,7 @@ public final class EndfieldEarlyWindow implements ImmediateWindowProvider {
 
     @Override
     public String getGLVersion() {
-        return "3.3";
+        return this.glVersion;
     }
 
     private final ReentrantLock crashLock = new ReentrantLock();

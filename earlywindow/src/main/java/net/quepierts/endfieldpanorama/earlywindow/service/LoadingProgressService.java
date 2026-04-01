@@ -91,7 +91,7 @@ public interface LoadingProgressService {
         @Getter
         private final List<ProgressBar>     progress    = new ArrayList<>();
 
-        private LoadingProgressService      service;
+        private LoadingProgressService      service     = new Fml();
 
         public Collection<ProgressBar> getCurrentProgress() {
 
@@ -111,7 +111,7 @@ public interface LoadingProgressService {
             }
         }
 
-        protected void fit(int size) {
+        public void fit(int size) {
             while (progress.size() < size) {
                 progress.add(new ProgressBar());
             }

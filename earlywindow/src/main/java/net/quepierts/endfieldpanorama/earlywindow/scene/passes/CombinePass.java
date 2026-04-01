@@ -19,6 +19,8 @@ public final class CombinePass implements RenderPass {
 
     private final SilhouetteShader  silhouette;
 
+    private final SceneUbo          sceneUbo;
+
     public CombinePass(
             @NotNull ShaderManager manager,
             @NotNull SceneUbo sceneUbo
@@ -29,10 +31,12 @@ public final class CombinePass implements RenderPass {
         this.scanLines          = new BlitShader(manager, Shaders.Fragment.SCAN_LINE);
         this.silhouette         = new SilhouetteShader(manager);
 
-        this.pattern        .bind(sceneUbo);
-        this.background     .bind(sceneUbo);
-        this.scanLines      .bind(sceneUbo);
-        this.silhouette     .bind(sceneUbo);
+        this.pattern            .bind(sceneUbo);
+        this.background         .bind(sceneUbo);
+        this.scanLines          .bind(sceneUbo);
+        this.silhouette         .bind(sceneUbo);
+
+        this.sceneUbo           = sceneUbo;
 
     }
 
@@ -40,6 +44,8 @@ public final class CombinePass implements RenderPass {
     public void render(RenderContext context, float delta, float time) {
         
         var graphics    = context.getGraphics();
+
+        this.sceneUbo   .bind();
 
         context         .clearFrameBuffer("scene");
         context         .bindFrameBuffer("scene");
@@ -63,6 +69,7 @@ public final class CombinePass implements RenderPass {
         graphics        .blit(this.scanLines);
         context         .unbindTexture("buffer.scene", 0);
 
+        this.sceneUbo   .unbind();
     }
 
     @Override

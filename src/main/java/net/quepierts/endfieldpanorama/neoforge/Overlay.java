@@ -109,6 +109,8 @@ public final class Overlay extends LoadingOverlay implements LoadingProgressServ
 
     @Override
     public void provide(LoadingProgressService.Context context) {
+        context         .fit(1);
+
         var inout       = context.getProgress();
         var first       = inout.getFirst();
 

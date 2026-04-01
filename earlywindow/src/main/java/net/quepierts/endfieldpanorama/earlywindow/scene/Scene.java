@@ -56,6 +56,8 @@ public final class Scene implements Resource {
         for (ModelRenderer model : models) {
             model.render();
         }
+
+        this.sceneUbo.unbind();
     }
 
     @Override
