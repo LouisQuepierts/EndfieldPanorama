@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.quepierts.endfieldpanorama.earlywindow'
-version = "2.2.1"
+version = rootProject.version
 
 repositories {
     gradlePluginPortal()
@@ -31,6 +31,7 @@ dependencies {
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: lombok_version
 
     compileOnly "net.neoforged:neoforge:${neo_version}"
+    compileOnly "net.neoforged:coremods:7.0.3"
     compileOnly group: 'net.neoforged.fancymodloader', name: 'loader', version: '4.0.42'
 
     compileOnly group: 'org.joml', name: 'joml', version: '1.10.5'

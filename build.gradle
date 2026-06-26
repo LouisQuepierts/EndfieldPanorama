@@ -5,12 +5,19 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.140'
 }
 
-version = mod_version
+version = "${minecraft_version}-${mod_version}"
 group = mod_group_id
 def useJarJar = false
 
 repositories {
     mavenLocal()
+
+    maven {
+        url "https://cursemaven.com"
+        content {
+            includeGroup "curse.maven"
+        }
+    }
 }
 
 ext {
@@ -43,30 +50,6 @@ neoForge {
 
             // Comma-separated list of namespaces to load gametests from. Empty = all namespaces.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        server {
-            server()
-            programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        // This run config launches GameTestServer and runs all registered gametests, then exits.
-        // By default, the server will crash when no gametests are provided.
-        // The gametest system is also enabled by default for other run configs under the /test command.
-        gameTestServer {
-            type = "gameTestServer"
-            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        }
-
-        data {
-            data()
-
-            // example of overriding the workingDirectory set in configureEach above, uncomment if you want to use it
-            // gameDirectory = project.file('run-data')
-
-            // Specify the modid for data generation, where to output the resulting resource, and where to look for existing resources.
-            programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
         }
 
         // applies to all the run configs above
@@ -109,6 +92,10 @@ dependencies {
     } else {
         implementation project(":earlywindow")
     }
+
+//    implementation "curse.maven:create-328085:7408951"
+//    implementation "curse.maven:irisshaders-455508:6661598"
+//    implementation "curse.maven:iris-flywheel-compat-659897:7701220"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
@@ -184,7 +171,7 @@ tasks.register("runWithRenderDoc", Exec) {
 
 def copyEarlyWindow = tasks.register("copyEarlyWindow", Copy) {
     def output = "run/mods"
-    def shadow = project(":earlywindow").tasks.named("shadowJar")
+    def shadow = project(":earlywindow").tasks.named("jar")
     def source = shadow.flatMap { it.archiveFile }
     def file = source.map { it.asFile }
 
